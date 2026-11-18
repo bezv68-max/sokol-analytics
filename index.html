@@ -1117,7 +1117,9 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
           isUnassigned,
           region: regionVal,
           visitType: cleanStr(cell(r, 6)),
-          status: cleanStr(cell(r, 9))
+          status: cleanStr(cell(r, 9)),
+          serviceSalon: cleanStr(cell(r, 8)),
+          serviceKc: cleanStr(cell(r, 17))
         });
       }
 
@@ -1131,7 +1133,12 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
         const date = normDate(cell(r, 0));
         if (!date) continue;
         trackMonth(date);
-        consents.push({ date, staff, region: normRegion(cell(r, 19)) });
+        consents.push({
+          date,
+          staff,
+          region: normRegion(cell(r, 19)),
+          service: cleanStr(cell(r, 17))
+        });
       }
 
       // 5. Доработка лидов: H(7)=Регион, I(8)=Статус, L(11)=МТП
@@ -2446,7 +2453,114 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
             </div>
             <div class="chart-box" style="height:260px;"><canvas id="salonCumChart"></canvas></div>
           </div>
-        </div>`;
+        </div>
+
+        ${(() => {
+          const allowedRegs = new Set(filteredPlans.map(rp => rp.region.toLowerCase()));
+          const matchReg = (reg) => allowedRegs.has(String(reg || '').toLowerCase());
+          const fCons = consents.filter(x => activeSet.has(x.date) && matchReg(x.region));
+          const fVis = visits.filter(x => activeSet.has(x.date) && x.visitType !== 'Повторный визит' && matchReg(x.region));
+
+          const normSvc = (val) => {
+            const s = String(val || '').trim();
+            return (!s || s === '-' || s === '—') ? 'Не указана' : s;
+          };
+
+          const svcMap = new Map();
+          const ensureSvc = (name) => {
+            const key = name.toLowerCase();
+            if (!svcMap.has(key)) {
+              svcMap.set(key, { name, cons: 0, visKc: 0, visSalon: 0, diffCnt: 0, diffTargets: new Map() });
+            }
+            return svcMap.get(key);
+          };
+
+          fCons.forEach(c => {
+            ensureSvc(normSvc(c.service)).cons += 1;
+          });
+
+          let totalDiffAll = 0;
+          fVis.forEach(v => {
+            const kcName = normSvc(v.serviceKc);
+            const salName = normSvc(v.serviceSalon);
+            const kcItem = ensureSvc(kcName);
+            kcItem.visKc += 1;
+            ensureSvc(salName).visSalon += 1;
+
+            if (kcName.toLowerCase() !== salName.toLowerCase()) {
+              kcItem.diffCnt += 1;
+              totalDiffAll += 1;
+              kcItem.diffTargets.set(salName, (kcItem.diffTargets.get(salName) || 0) + 1);
+            }
+          });
+
+          const svcRows = Array.from(svcMap.values()).sort((a, b) => b.cons - a.cons || b.visKc - a.visKc);
+          const totC = fCons.length;
+          const totVK = fVis.length;
+          const totDiffPct = totVK > 0 ? (totalDiffAll / totVK) * 100 : 0;
+
+          return `
+          <div class="section-card">
+            <div class="section-header" style="flex-wrap:wrap;gap:8px;">
+              <h3>Разбивка по услугам: Согласия и Визиты ${sFilter === 'ALL' ? '(Все салоны)' : '(' + sFilter + ')'}</h3>
+              <span style="font-size:12px;color:var(--text-muted);">Сравнение услуги приглашения КЦ и фактической услуги, зафиксированной в салоне</span>
+            </div>
+            <div class="table-wrap staff-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="text-align:left;">Услуга</th>
+                    <th>Согласия КЦ</th>
+                    <th class="col-sep">Доля согл.</th>
+                    <th>Визиты по услуге</th>
+                    <th class="col-sep">Доезд по услуге</th>
+                    <th style="text-align:left;">На какую услугу поменяли в салоне</th>
+                    <th>% различий</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${svcRows.length ? svcRows.map(r => {
+                    const sharePct = totC > 0 ? (r.cons / totC) * 100 : 0;
+                    const doezdPct = r.cons > 0 ? (r.visKc / r.cons) * 100 : 0;
+                    const diffPct = r.visKc > 0 ? (r.diffCnt / r.visKc) * 100 : 0;
+                    const diffHint = r.diffTargets.size
+                      ? 'В салоне указали: ' + Array.from(r.diffTargets.entries()).map(([k, cnt]) => `${k} (${cnt})`).join(', ')
+                      : 'Все приехавшие оформлены на ту же услугу';
+                    const diffBadge = r.diffCnt > 0
+                      ? `<span class="badge ${diffPct >= 30 ? 'badge-red' : 'badge-amber'}">${diffPct.toFixed(1)}%</span>`
+                      : '<span style="color:#94a3b8;">0.0%</span>';
+                    return `
+                    <tr>
+                      <td style="text-align:left;font-weight:600;color:#18181b;">${r.name}</td>
+                      <td><b>${numFmt(r.cons)}</b></td>
+                      <td class="col-sep" style="color:#64748b;">${sharePct.toFixed(1)}%</td>
+                      <td><b>${numFmt(r.visKc)}</b></td>
+                      <td class="col-sep" style="color:${doezdPct >= 50 ? '#059669' : '#52525b'};font-weight:600;">${r.cons > 0 ? doezdPct.toFixed(1) + '%' : '—'}</td>
+                      <td style="text-align:left;white-space:normal;">
+                        ${r.diffCnt > 0 ? `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;"><b style="color:#be123c;">${numFmt(r.diffCnt)}:</b>${Array.from(r.diffTargets.entries()).sort((a,b)=>b[1]-a[1]).map(([k,cnt])=>`<span style="background:#fff1f2;border:1px solid #fecdd3;color:#881337;padding:1px 6px;border-radius:5px;font-size:11px;white-space:nowrap;">${r.name} → <b>${k}</b> (${cnt})</span>`).join('')}</div>` : '<span style="color:#94a3b8;">Без изменений</span>'}
+                      </td>
+                      <td title="${diffHint}">${diffBadge}</td>
+                    </tr>`;
+                  }).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:16px;">Нет данных по услугам за выбранный период</td></tr>'}
+                </tbody>
+                ${svcRows.length ? `<tfoot>
+                  <tr>
+                    <td style="text-align:left;">Итого по услугам</td>
+                    <td>${numFmt(totC)}</td>
+                    <td class="col-sep">100.0%</td>
+                    <td>${numFmt(totVK)}</td>
+                    <td class="col-sep">${totC > 0 ? ((totVK / totC) * 100).toFixed(1) + '%' : '—'}</td>
+                    <td style="text-align:left;color:${totalDiffAll > 0 ? '#be123c' : '#18181b'};">Всего изменений: ${numFmt(totalDiffAll)}</td>
+                    <td>${totVK > 0 ? totDiffPct.toFixed(1) + '%' : '0.0%'}</td>
+                  </tr>
+                </tfoot>` : ''}
+              </table>
+            </div>
+            <div style="margin-top:10px;padding-top:8px;border-top:1px dashed #e2e8f0;font-size:11.5px;color:#64748b;line-height:1.45;">
+              • <b>Визиты по услуге:</b> первичные визиты за отработанные дни в разрезе услуги, на которую пригласил оператор КЦ • <b>Доезд по услуге:</b> отношение визитов по услуге к количеству согласий • <b>% различий:</b> доля приехавших по данной услуге клиентов, которым салон изменил услугу при визите.
+            </div>
+          </div>`;
+        })()}`;
 
       const palette = new Array('#be123c', '#2563eb', '#10b981', '#f59e0b', '#7c3aed');
       const dayLabels = activeDatesList.map(d => d.slice(8, 10));
