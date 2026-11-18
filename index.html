@@ -1224,7 +1224,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
         // Даём браузеру 50 мс отрисовать анимацию перед запуском парсинга XLSX
         setTimeout(() => {
           try {
-            const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array', cellDates: true });
+            const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
             parseWorkbook(wb, file.name);
           } catch (err) {
             errBox.textContent = 'Ошибка при чтении файла: ' + err.message;
