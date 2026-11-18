@@ -836,7 +836,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     function getSheetRows(wb, targetName) {
       const found = wb.SheetNames.find(n => n.trim().toLowerCase() === targetName.trim().toLowerCase());
       if (!found) return null;
-      return XLSX.utils.sheet_to_json(wb.Sheets[found], { header: 1, defval: '' });
+      return XLSX.utils.sheet_to_json(wb.Sheets[found], { header: 1, defval: '', raw: true });
     }
 
     // Нормализация любой даты Excel в YYYY-MM-DD без сдвига UTC
