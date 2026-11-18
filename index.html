@@ -1429,7 +1429,8 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
         allowedStaff.forEach(name => { planVisits += (ref.vmtp[name]?.planVisits || 0); });
       }
 
-      const activeDays = dayRows.filter(x => x.totalCalls > 0 || x.visits > 0 || x.cold > 0).length || 1;
+      const closedDatesSet = new Set(allDates.filter(d => calls.some(c => c.date === d && c.dept === 'ВМТП' && c.status !== 'Пропущенный звонок')));
+      const activeDays = dayRows.filter(x => closedDatesSet.has(x.date) && (x.totalCalls > 0 || x.visits > 0 || x.cold > 0)).length || 1;
       const planPct = planVisits > 0 ? (tot.visits / planVisits) * 100 : 0;
       const forecastVisits = (tot.visits / activeDays) * daysInMonth;
       const forecastPct = planVisits > 0 ? (forecastVisits / planVisits) * 100 : 0;
@@ -2086,7 +2087,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       const { group, staffMode, singleStaff, staffSortKey, staffSortDir } = STATE.filters;
       const empList = Object.values(ref.vmtp).filter(e => group === 'ALL' || e.sv === group);
 
-      const activeDays = allDates.filter(d => calls.some(c => c.date === d && c.dept === 'ВМТП')).length || 1;
+      const activeDays = allDates.filter(d => calls.some(c => c.date === d && c.dept === 'ВМТП' && c.status !== 'Пропущенный звонок')).length || 1;
 
       const calcEmp = (emp) => {
         const eLeads = leads.filter(x => x.staff === emp.name);
@@ -2711,7 +2712,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       const { group } = STATE.filters;
       const empList = Object.values(ref.vmtp).filter(e => group === 'ALL' || e.sv === group);
 
-      const activeDatesList = allDates.filter(d => calls.some(c => c.date === d && c.dept === 'ВМТП'));
+      const activeDatesList = allDates.filter(d => calls.some(c => c.date === d && c.dept === 'ВМТП' && c.status !== 'Пропущенный звонок'));
       const activeDays = activeDatesList.length || 1;
       const lastDateStr = activeDatesList.length ? activeDatesList[activeDatesList.length - 1] : '';
       const lastDayNum = lastDateStr ? Number(lastDateStr.slice(8, 10)) : activeDays;
