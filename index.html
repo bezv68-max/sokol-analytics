@@ -1628,6 +1628,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
           <button class="tab-btn" data-tab="out-audit" onclick="switchTab('out-audit')">Точки роста МТП</button>
           <button class="tab-btn" data-tab="out-plan" onclick="switchTab('out-plan')">Планирование</button>
+          <button class="tab-btn" data-tab="out-compare" onclick="switchTab('out-compare')">Сравнительная таблица</button>
 
         </div>
 
@@ -2502,7 +2503,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
         const eLeads = leads.filter(x => x.staff === emp.name);
         const cold = eLeads.length;
         const liquid = eLeads.filter(x => x.isLiquid).length;
-        const eCalls = filterCallsList(calls.filter(c => c.staff === emp.name && c.status !== 'Пропущенный звонок'), true);
+        const eCalls = (typeof filterCallsList === 'function' ? filterCallsList : (arr => arr))(calls.filter(c => c.staff === emp.name && c.status !== 'Пропущенный звонок'), true);
         const totalCalls = eCalls.filter(c => !c._onlyAns).length;
         const answered = eCalls.filter(x => x.sec >= 40).length;
         const eCons = consents.filter(x => x.staff === emp.name).length;
@@ -4417,7 +4418,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
         const liquid = eLeads.filter(x => x.isLiquid).length;
 
-        const eCalls = filterCallsList(calls.filter(x => x.staff === emp.name && x.status !== 'Пропущенный звонок'), true);
+        const eCalls = (typeof filterCallsList === 'function' ? filterCallsList : (arr => arr))(calls.filter(x => x.staff === emp.name && x.status !== 'Пропущенный звонок'), true);
 
         const totalCalls = eCalls.filter(c => !c._onlyAns).length;
 
@@ -4707,7 +4708,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
           const dl = leads.filter(x => x.staff === target.name && x.date === d);
 
-          const dc = filterCallsList(calls.filter(x => x.staff === target.name && x.date === d && x.status !== 'Пропущенный звонок'), true);
+          const dc = (typeof filterCallsList === 'function' ? filterCallsList : (arr => arr))(calls.filter(x => x.staff === target.name && x.date === d && x.status !== 'Пропущенный звонок'), true);
 
           const dv = visits.filter(x => x.staff === target.name && x.date === d);
 
@@ -5557,7 +5558,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
       const { reachMode } = STATE.filters;
 
-      const vmtpCalls = filterCallsList(calls.filter(c => c.dept === 'ВМТП' && c.status !== 'Пропущенный звонок'), reachMode === 'staff');
+      const vmtpCalls = (typeof filterCallsList === 'function' ? filterCallsList : (arr => arr))(calls.filter(c => c.dept === 'ВМТП' && c.status !== 'Пропущенный звонок'), reachMode === 'staff');
 
 
 
@@ -5889,7 +5890,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
         const liquid = eLeads.filter(x => x.isLiquid).length;
 
-        const eCalls = filterCallsList(calls.filter(x => x.staff === emp.name && x.status !== 'Пропущенный звонок'), true);
+        const eCalls = (typeof filterCallsList === 'function' ? filterCallsList : (arr => arr))(calls.filter(x => x.staff === emp.name && x.status !== 'Пропущенный звонок'), true);
 
         const totalCalls = eCalls.filter(c => !c._onlyAns).length;
 
@@ -8516,7 +8517,7 @@ drawLineChart(rows.map(r => r.date.slice(8, 10)), [
       const empSet = new Set(allEmps.map(e => e.name));
 
       const fLeads = leads.filter(x => empSet.has(x.staff));
-      const fCalls = filterCallsList(calls.filter(c => empSet.has(c.staff) && c.status !== 'Пропущенный звонок'), true);
+      const fCalls = (typeof filterCallsList === 'function' ? filterCallsList : (arr => arr))(calls.filter(c => empSet.has(c.staff) && c.status !== 'Пропущенный звонок'), true);
       const fCons = consents.filter(x => empSet.has(x.staff));
       const fVis = visits.filter(x => empSet.has(x.staff) && x.visitType !== 'Повторный визит');
       const fFixes = fixes.filter(x => empSet.has(x.staff));
@@ -8609,7 +8610,7 @@ drawLineChart(rows.map(r => r.date.slice(8, 10)), [
         const eLeads = leads.filter(x => x.staff === emp.name);
         rawDeptCold += eLeads.length;
         const liq = eLeads.filter(x => x.isLiquid).length;
-        const eCalls = filterCallsList(calls.filter(c => c.staff === emp.name && c.status !== 'Пропущенный звонок'), true);
+        const eCalls = (typeof filterCallsList === 'function' ? filterCallsList : (arr => arr))(calls.filter(c => c.staff === emp.name && c.status !== 'Пропущенный звонок'), true);
         rawDeptAns += eCalls.filter(x => x.sec >= 40).length;
         rawDeptCons += consents.filter(x => x.staff === emp.name).length;
         const eVis = visits.filter(x => x.staff === emp.name && x.visitType !== 'Повторный визит').length;
@@ -8642,7 +8643,7 @@ drawLineChart(rows.map(r => r.date.slice(8, 10)), [
         const eLeads = leads.filter(x => x.staff === emp.name);
         const cold = eLeads.length;
         const liquid = eLeads.filter(x => x.isLiquid).length;
-        const eCalls = filterCallsList(calls.filter(c => c.staff === emp.name && c.status !== 'Пропущенный звонок'), true);
+        const eCalls = (typeof filterCallsList === 'function' ? filterCallsList : (arr => arr))(calls.filter(c => c.staff === emp.name && c.status !== 'Пропущенный звонок'), true);
         const answered = eCalls.filter(x => x.sec >= 40).length;
         const eCons = consents.filter(x => x.staff === emp.name).length;
         const eVisAll = visits.filter(x => x.staff === emp.name);
@@ -9219,6 +9220,158 @@ drawLineChart(rows.map(r => r.date.slice(8, 10)), [
         </div>`;
     }
 
+    function setComparePreset(mode) {
+  if (!STATE.data) return;
+  const dates = (STATE.data.allDates || []).filter(d => (STATE.data.calls || []).some(c => c.date === d && c.dept === 'ВМТП' && c.status !== 'Пропущенный звонок'));
+  if (dates.length < 2) return;
+  const n = dates.length, sv = (STATE.cmp && STATE.cmp.sv) || 'ALL', perDay = Boolean(STATE.cmp && STATE.cmp.perDay);
+  if (mode === 'half') { const mid = Math.floor(n / 2); STATE.cmp = { p1Start: dates.at(0), p1End: dates[mid - 1], p2Start: dates[mid], p2End: dates.at(-1), sv, perDay }; }
+  else if (mode === '7d') { const len = Math.min(7, Math.floor(n / 2)); STATE.cmp = { p1Start: dates[n - len * 2], p1End: dates[n - len - 1], p2Start: dates[n - len], p2End: dates.at(-1), sv, perDay }; }
+  else if (mode === '5d') { const len = Math.min(5, Math.floor(n / 2)); STATE.cmp = { p1Start: dates.at(0), p1End: dates[len - 1], p2Start: dates[n - len], p2End: dates.at(-1), sv, perDay }; }
+  renderOutboundCompare();
+}
+function calcPeriodSliceMetrics(dStart, dEnd, svFilter) {
+  const { allDates, ref, leads, calls, visits, consents } = STATE.data;
+  const activeDates = allDates.filter(d => d >= dStart && d <= dEnd && calls.some(c => c.date === d && c.dept === 'ВМТП' && c.status !== 'Пропущенный звонок'));
+  const daysCount = activeDates.length || 1;
+  const emps = Object.values(ref.vmtp).filter(e => String(e.status || '').toLowerCase() === 'штатный' && (svFilter === 'ALL' || (e.sv || 'Без группы') === svFilter));
+  const empNames = new Set(emps.map(e => e.name));
+  const fCalls = (typeof filterCallsList === 'function') ? filterCallsList : (arr => arr);
+  const pLeads = leads.filter(x => x.date >= dStart && x.date <= dEnd && (svFilter === 'ALL' || empNames.has(x.staff)));
+  const pCalls = fCalls(calls.filter(c => c.date >= dStart && c.date <= dEnd && c.dept === 'ВМТП' && c.status !== 'Пропущенный звонок' && (svFilter === 'ALL' || empNames.has(c.staff))), true);
+  const pCons = consents.filter(x => x.date >= dStart && x.date <= dEnd && (svFilter === 'ALL' || empNames.has(x.staff)));
+  const pVisAll = visits.filter(x => x.date >= dStart && x.date <= dEnd && (svFilter === 'ALL' || empNames.has(x.staff)));
+  const pVis = pVisAll.filter(x => x.visitType !== 'Повторный визит');
+  const pDeals = pVisAll.filter(x => x.status === 'Сделка');
+  const cold = pLeads.length, liq = pLeads.filter(x => x.isLiquid).length, ans = pCalls.filter(x => x.sec >= 40).length, cons = pCons.length, vis = pVis.length, deals = pDeals.length;
+  return { daysCount, cold, liq, ans, cons, vis, deals, liqPct: cold > 0 ? (liq / cold) * 100 : 0, emps };
+}
+function renderOutboundCompare() {
+  if (!STATE.data) return;
+  const dates = (STATE.data.allDates || []).filter(d => (STATE.data.calls || []).some(c => c.date === d && c.dept === 'ВМТП' && c.status !== 'Пропущенный звонок'));
+  if (dates.length < 2) { document.getElementById('tabContent').innerHTML = '<div class="section-card" style="padding:24px;">Недостаточно рабочих дней для сравнения.</div>'; return; }
+  if (!STATE.cmp) { const mid = Math.floor(dates.length / 2); STATE.cmp = { p1Start: dates.at(0), p1End: dates[mid - 1], p2Start: dates[mid], p2End: dates.at(-1), sv: 'ALL', perDay: false }; }
+  const c = STATE.cmp, svList = [...new Set(Object.values(STATE.data.ref.vmtp).filter(e => String(e.status || '').toLowerCase() === 'штатный').map(e => e.sv || 'Без группы'))].sort();
+  const m1 = calcPeriodSliceMetrics(c.p1Start, c.p1End, c.sv), m2 = calcPeriodSliceMetrics(c.p2Start, c.p2End, c.sv);
+  const div1 = c.perDay ? m1.daysCount : 1, div2 = c.perDay ? m2.daysCount : 1;
+  const fCalls = (typeof filterCallsList === 'function') ? filterCallsList : (arr => arr);
+  const fmtVal = (v) => c.perDay ? v.toFixed(1) : numFmt(Math.round(v));
+  const fmtDelta = (v1, v2, isPct) => { const d = v2 - v1; if (Math.abs(d) < 0.05) return '<span style="display:inline-block;padding:2px 6px;border-radius:6px;background:#f1f5f9;color:#64748b;font-size:11px;font-weight:600;">0</span>'; const s = d > 0 ? '+' : ''; const bg = d > 0 ? '#dcfce7' : '#fee2e2'; const col = d > 0 ? '#15803d' : '#b91c1c'; const pctRel = (!isPct && v1 > 0) ? (' (' + s + Math.round((d / v1) * 100) + '%)') : ''; const valStr = isPct ? (s + d.toFixed(1) + ' п.п.') : (s + (c.perDay ? d.toFixed(1) : numFmt(Math.round(d))) + pctRel); return '<span style="display:inline-block;padding:2px 7px;border-radius:6px;background:' + bg + ';color:' + col + ';font-size:11px;font-weight:700;white-space:nowrap;">' + valStr + '</span>'; };  const fmtPairBars = (v1, v2) => { const mx = Math.max(v1, v2, 0.001); const w1 = Math.round((v1 / mx) * 100), w2 = Math.round((v2 / mx) * 100); const barCol = v2 >= v1 ? '#16a34a' : '#dc2626'; return '<div style="min-width:54px;"><div style="height:4px;background:#e2e8f0;border-radius:3px;overflow:hidden;margin-bottom:3px;"><div style="width:' + w1 + '%;height:100%;background:#94a3b8;"></div></div><div style="height:4px;background:#e2e8f0;border-radius:3px;overflow:hidden;"><div style="width:' + w2 + '%;height:100%;background:' + barCol + ';"></div></div></div>'; };
+  const v1Cold = m1.cold / div1, v2Cold = m2.cold / div2, v1Liq = m1.liq / div1, v2Liq = m2.liq / div2, v1Ans = m1.ans / div1, v2Ans = m2.ans / div2, v1Cons = m1.cons / div1, v2Cons = m2.cons / div2, v1Vis = m1.vis / div1, v2Vis = m2.vis / div2, v1Deals = m1.deals / div1, v2Deals = m2.deals / div2;
+  const dateOpts = (sel) => dates.map(d => '<option value="' + d + '"' + (d === sel ? ' selected' : '') + '>' + fmtDate(d) + '</option>').join('');
+  const groups = (c.sv === 'ALL' ? svList : [c.sv]);
+  const rowsHtml = groups.map(sv => {
+    const g1 = calcPeriodSliceMetrics(c.p1Start, c.p1End, sv), g2 = calcPeriodSliceMetrics(c.p2Start, c.p2End, sv), gd1 = c.perDay ? g1.daysCount : 1, gd2 = c.perDay ? g2.daysCount : 1;
+    const empRows = g2.emps.map(emp => {
+      const eL1 = STATE.data.leads.filter(x => x.staff === emp.name && x.date >= c.p1Start && x.date <= c.p1End), eL2 = STATE.data.leads.filter(x => x.staff === emp.name && x.date >= c.p2Start && x.date <= c.p2End);
+      const eCold1 = eL1.length / gd1, eCold2 = eL2.length / gd2;
+      const eLiq1 = eL1.filter(x => x.isLiquid).length / gd1, eLiq2 = eL2.filter(x => x.isLiquid).length / gd2;
+      const eA1 = fCalls(STATE.data.calls.filter(x => x.staff === emp.name && x.date >= c.p1Start && x.date <= c.p1End && x.sec >= 40), true).length / gd1, eA2 = fCalls(STATE.data.calls.filter(x => x.staff === emp.name && x.date >= c.p2Start && x.date <= c.p2End && x.sec >= 40), true).length / gd2;
+      const eC1 = STATE.data.consents.filter(x => x.staff === emp.name && x.date >= c.p1Start && x.date <= c.p1End).length / gd1, eC2 = STATE.data.consents.filter(x => x.staff === emp.name && x.date >= c.p2Start && x.date <= c.p2End).length / gd2;
+      const eVAll1 = STATE.data.visits.filter(x => x.staff === emp.name && x.date >= c.p1Start && x.date <= c.p1End), eVAll2 = STATE.data.visits.filter(x => x.staff === emp.name && x.date >= c.p2Start && x.date <= c.p2End);
+      const eV1 = eVAll1.filter(x => x.visitType !== 'Повторный визит').length / gd1, eV2 = eVAll2.filter(x => x.visitType !== 'Повторный визит').length / gd2;
+      const eD1 = eVAll1.filter(x => x.status === 'Сделка').length / gd1, eD2 = eVAll2.filter(x => x.status === 'Сделка').length / gd2;
+      const eLP1 = eCold1 > 0 ? (eLiq1 / eCold1) * 100 : 0, eLP2 = eCold2 > 0 ? (eLiq2 / eCold2) * 100 : 0;
+      const eCP1 = eA1 > 0 ? (eC1 / eA1) * 100 : 0, eCP2 = eA2 > 0 ? (eC2 / eA2) * 100 : 0;
+      const eDP1 = eC1 > 0 ? (eV1 / eC1) * 100 : 0, eDP2 = eC2 > 0 ? (eV2 / eC2) * 100 : 0;
+      const eVP1 = eLiq1 > 0 ? (eV1 / eLiq1) * 100 : 0, eVP2 = eLiq2 > 0 ? (eV2 / eLiq2) * 100 : 0;
+      return '<tr><td style="text-align:left;padding-left:22px;font-weight:600;">' + emp.name + '</td>' +
+        '<td>' + fmtVal(eCold1) + '</td><td>' + fmtVal(eCold2) + '</td><td>' + fmtDelta(eCold1, eCold2) + '</td>' +
+        '<td>' + fmtVal(eLiq1) + '</td><td>' + fmtVal(eLiq2) + '</td><td>' + fmtDelta(eLiq1, eLiq2) + '</td>' +
+        '<td>' + eLP1.toFixed(1) + '%</td><td>' + eLP2.toFixed(1) + '%</td><td>' + fmtDelta(eLP1, eLP2, true) + '</td>' +
+        '<td>' + fmtVal(eA1) + '</td><td>' + fmtVal(eA2) + '</td><td>' + fmtDelta(eA1, eA2) + '</td>' +
+        '<td>' + fmtVal(eC1) + '</td><td>' + fmtVal(eC2) + '</td><td>' + fmtDelta(eC1, eC2) + '</td>' +
+        '<td>' + eCP1.toFixed(1) + '%</td><td>' + eCP2.toFixed(1) + '%</td><td>' + fmtDelta(eCP1, eCP2, true) + '</td>' +
+        '<td style="border-left:2px solid #e2e8f0;"><b>' + fmtVal(eV1) + '</b></td><td><b>' + fmtVal(eV2) + '</b></td><td>' + fmtPairBars(eV1, eV2) + '</td><td>' + fmtDelta(eV1, eV2) + '</td>' +
+        '<td>' + fmtVal(eD1) + '</td><td>' + fmtVal(eD2) + '</td><td>' + fmtDelta(eD1, eD2) + '</td>' +
+        '<td>' + eDP1.toFixed(1) + '%</td><td>' + eDP2.toFixed(1) + '%</td><td>' + fmtDelta(eDP1, eDP2, true) + '</td>' +
+        '<td>' + eVP1.toFixed(1) + '%</td><td>' + eVP2.toFixed(1) + '%</td><td>' + fmtDelta(eVP1, eVP2, true) + '</td></tr>';
+    }).join('');
+    const gLP1 = g1.cold > 0 ? (g1.liq / g1.cold) * 100 : 0, gLP2 = g2.cold > 0 ? (g2.liq / g2.cold) * 100 : 0;
+    const gCP1 = g1.ans > 0 ? (g1.cons / g1.ans) * 100 : 0, gCP2 = g2.ans > 0 ? (g2.cons / g2.ans) * 100 : 0;
+    const gDP1 = g1.cons > 0 ? (g1.vis / g1.cons) * 100 : 0, gDP2 = g2.cons > 0 ? (g2.vis / g2.cons) * 100 : 0;
+    const gVP1 = g1.liq > 0 ? (g1.vis / g1.liq) * 100 : 0, gVP2 = g2.liq > 0 ? (g2.vis / g2.liq) * 100 : 0;
+    return '<tr style="background:#f8fafc;font-weight:700;"><td style="text-align:left;">Группа: ' + sv + ' (' + g2.emps.length + ' чел.)</td>' +
+      '<td>' + fmtVal(g1.cold/gd1) + '</td><td>' + fmtVal(g2.cold/gd2) + '</td><td>' + fmtDelta(g1.cold/gd1, g2.cold/gd2) + '</td>' +
+      '<td>' + fmtVal(g1.liq/gd1) + '</td><td>' + fmtVal(g2.liq/gd2) + '</td><td>' + fmtDelta(g1.liq/gd1, g2.liq/gd2) + '</td>' +
+      '<td>' + gLP1.toFixed(1) + '%</td><td>' + gLP2.toFixed(1) + '%</td><td>' + fmtDelta(gLP1, gLP2, true) + '</td>' +
+      '<td>' + fmtVal(g1.ans/gd1) + '</td><td>' + fmtVal(g2.ans/gd2) + '</td><td>' + fmtDelta(g1.ans/gd1, g2.ans/gd2) + '</td>' +
+      '<td>' + fmtVal(g1.cons/gd1) + '</td><td>' + fmtVal(g2.cons/gd2) + '</td><td>' + fmtDelta(g1.cons/gd1, g2.cons/gd2) + '</td>' +
+      '<td>' + gCP1.toFixed(1) + '%</td><td>' + gCP2.toFixed(1) + '%</td><td>' + fmtDelta(gCP1, gCP2, true) + '</td>' +
+      '<td style="border-left:2px solid #cbd5e1;">' + fmtVal(g1.vis/gd1) + '</td><td>' + fmtVal(g2.vis/gd2) + '</td><td>' + fmtPairBars(g1.vis/gd1, g2.vis/gd2) + '</td><td>' + fmtDelta(g1.vis/gd1, g2.vis/gd2) + '</td>' +
+      '<td>' + fmtVal(g1.deals/gd1) + '</td><td>' + fmtVal(g2.deals/gd2) + '</td><td>' + fmtDelta(g1.deals/gd1, g2.deals/gd2) + '</td>' +
+      '<td>' + gDP1.toFixed(1) + '%</td><td>' + gDP2.toFixed(1) + '%</td><td>' + fmtDelta(gDP1, gDP2, true) + '</td>' +
+      '<td>' + gVP1.toFixed(1) + '%</td><td>' + gVP2.toFixed(1) + '%</td><td>' + fmtDelta(gVP1, gVP2, true) + '</td></tr>' + empRows;
+  }).join('');
+  const svOpts = svList.map(s => '<option value="' + s + '"' + (c.sv === s ? ' selected' : '') + '>' + s + '</option>').join('');
+  const fBar = '<div class="filters-card" style="flex-wrap:wrap;gap:14px;align-items:flex-end;">' +
+    '<div class="filter-group"><label>Период 1 (База)</label><div style="display:flex;gap:6px;align-items:center;"><select onchange="STATE.cmp.p1Start=this.value;renderOutboundCompare()">' + dateOpts(c.p1Start) + '</select><span>—</span><select onchange="STATE.cmp.p1End=this.value;renderOutboundCompare()">' + dateOpts(c.p1End) + '</select></div></div>' +
+    '<div class="filter-group"><label>Период 2 (Сравнение)</label><div style="display:flex;gap:6px;align-items:center;"><select onchange="STATE.cmp.p2Start=this.value;renderOutboundCompare()">' + dateOpts(c.p2Start) + '</select><span>—</span><select onchange="STATE.cmp.p2End=this.value;renderOutboundCompare()">' + dateOpts(c.p2End) + '</select></div></div>' +
+    '<div class="filter-group"><label>Группа супервайзера</label><select onchange="STATE.cmp.sv=this.value;renderOutboundCompare()"><option value="ALL"' + (c.sv === 'ALL' ? ' selected' : '') + '>Весь КЦ (Все группы)</option>' + svOpts + '</select></div>' +
+    '<div class="filter-group"><label>Режим расчёта</label><select onchange="STATE.cmp.perDay=(this.value===\x27day\x27);renderOutboundCompare()"><option value="sum"' + (!c.perDay ? ' selected' : '') + '>Суммарно за период</option><option value="day"' + (c.perDay ? ' selected' : '') + '>В среднем за 1 день</option></select></div>' +
+    '<div class="filter-group" style="margin-left:auto;"><label>Быстрые периоды</label><div style="display:flex;gap:6px;flex-wrap:wrap;">' +
+    '<button class="btn btn-outline" style="padding:6px 10px;font-size:12px;" onclick="setComparePreset(\x27half\x27)">1-я пол. vs 2-я пол.</button>' +
+    '<button class="btn btn-outline" style="padding:6px 10px;font-size:12px;" onclick="setComparePreset(\x277d\x27)">Прошлые 7 дн. vs Текущие 7 дн.</button>' +
+    '<button class="btn btn-outline" style="padding:6px 10px;font-size:12px;" onclick="setComparePreset(\x275d\x27)">Первые 5 дн. vs Последние 5 дн.</button>' +
+    '</div></div></div>';
+  const kGrid = '<div class="kpi-grid">' +
+    '<div class="kpi-card"><div class="kpi-title">Холодные лиды (' + m1.daysCount + ' дн. → ' + m2.daysCount + ' дн.)</div><div class="kpi-value">' + fmtVal(v1Cold) + ' → ' + fmtVal(v2Cold) + '</div><div class="kpi-sub"><span>Изменение: ' + fmtDelta(v1Cold, v2Cold) + '</span><span>Ликвидность: <b>' + m1.liqPct.toFixed(1) + '% → ' + m2.liqPct.toFixed(1) + '%</b></span></div></div>' +
+    '<div class="kpi-card"><div class="kpi-title">Ликвидные лиды</div><div class="kpi-value">' + fmtVal(v1Liq) + ' → ' + fmtVal(v2Liq) + '</div><div class="kpi-sub"><span>Изменение: ' + fmtDelta(v1Liq, v2Liq) + '</span><span>Доля: ' + fmtDelta(m1.liqPct, m2.liqPct, true) + '</span></div></div>' +
+    '<div class="kpi-card"><div class="kpi-title">Отвеченные звонки (≥40с)</div><div class="kpi-value">' + fmtVal(v1Ans) + ' → ' + fmtVal(v2Ans) + '</div><div class="kpi-sub"><span>Изменение: ' + fmtDelta(v1Ans, v2Ans) + '</span><span>Согласия: <b>' + fmtVal(v1Cons) + ' → ' + fmtVal(v2Cons) + '</b> (' + fmtDelta(v1Cons, v2Cons) + ')</span></div></div>' +
+    '<div class="kpi-card"><div class="kpi-title">Визиты и Сделки</div><div class="kpi-value">' + fmtVal(v1Vis) + ' → ' + fmtVal(v2Vis) + ' <span style="font-size:14px;color:var(--text-muted);font-weight:500;">виз.</span></div><div class="kpi-sub"><span>Дельта визитов: ' + fmtDelta(v1Vis, v2Vis) + '</span><span>Сделки: <b>' + fmtVal(v1Deals) + ' → ' + fmtVal(v2Deals) + '</b> (' + fmtDelta(v1Deals, v2Deals) + ')</span></div></div>' +
+    '</div>';
+  const totLP1 = v1Cold > 0 ? (v1Liq / v1Cold) * 100 : 0, totLP2 = v2Cold > 0 ? (v2Liq / v2Cold) * 100 : 0;
+  const totCP1 = v1Ans > 0 ? (v1Cons / v1Ans) * 100 : 0, totCP2 = v2Ans > 0 ? (v2Cons / v2Ans) * 100 : 0;
+  const totDP1 = v1Cons > 0 ? (v1Vis / v1Cons) * 100 : 0, totDP2 = v2Cons > 0 ? (v2Vis / v2Cons) * 100 : 0;
+  const totVP1 = v1Liq > 0 ? (v1Vis / v1Liq) * 100 : 0, totVP2 = v2Liq > 0 ? (v2Vis / v2Liq) * 100 : 0;
+  const mkTh = (txt, cs, st) => '<th' + (cs ? ' colspan="' + cs + '"' : '') + (st ? ' style="' + st + '"' : '') + '>' + txt + '</th>';
+  const mkSub3 = (st) => mkTh('П1',0,st) + mkTh('П2') + mkTh('Δ');
+  const mkSub4 = (st) => mkTh('П1',0,st) + mkTh('П2') + mkTh('Шкала') + mkTh('Δ');
+  const eH1 = '<th rowspan="2" style="text-align:left;">Группа / Сотрудник</th>' + mkTh('Холодные',3) + mkTh('Ликвидные',3) + mkTh('% Ликвидн.',3) + mkTh('Отвеч. (≥40с)',3) + mkTh('Согласия',3) + mkTh('Конв. в согл. %',3) + mkTh('Визиты (П1 vs П2)',4,'border-left:2px solid #cbd5e1;') + mkTh('Сделки',3) + mkTh('Доезжаемость %',3) + mkTh('Чистая конв. %',3);
+  const eH2 = mkSub3() + mkSub3() + mkSub3() + mkSub3() + mkSub3() + mkSub3() + mkSub4('border-left:2px solid #cbd5e1;') + mkSub3() + mkSub3() + mkSub3();
+  const eTot = '<tr style="background:#fff1f2;font-weight:800;"><td style="text-align:left;">ИТОГО ПО ВЫБОРКЕ</td><td>' + fmtVal(v1Cold) + '</td><td>' + fmtVal(v2Cold) + '</td><td>' + fmtDelta(v1Cold, v2Cold) + '</td><td>' + fmtVal(v1Liq) + '</td><td>' + fmtVal(v2Liq) + '</td><td>' + fmtDelta(v1Liq, v2Liq) + '</td><td>' + totLP1.toFixed(1) + '%</td><td>' + totLP2.toFixed(1) + '%</td><td>' + fmtDelta(totLP1, totLP2, true) + '</td><td>' + fmtVal(v1Ans) + '</td><td>' + fmtVal(v2Ans) + '</td><td>' + fmtDelta(v1Ans, v2Ans) + '</td><td>' + fmtVal(v1Cons) + '</td><td>' + fmtVal(v2Cons) + '</td><td>' + fmtDelta(v1Cons, v2Cons) + '</td><td>' + totCP1.toFixed(1) + '%</td><td>' + totCP2.toFixed(1) + '%</td><td>' + fmtDelta(totCP1, totCP2, true) + '</td><td style="border-left:2px solid #cbd5e1;">' + fmtVal(v1Vis) + '</td><td>' + fmtVal(v2Vis) + '</td><td>' + fmtPairBars(v1Vis, v2Vis) + '</td><td>' + fmtDelta(v1Vis, v2Vis) + '</td><td>' + fmtVal(v1Deals) + '</td><td>' + fmtVal(v2Deals) + '</td><td>' + fmtDelta(v1Deals, v2Deals) + '</td><td>' + totDP1.toFixed(1) + '%</td><td>' + totDP2.toFixed(1) + '%</td><td>' + fmtDelta(totDP1, totDP2, true) + '</td><td>' + totVP1.toFixed(1) + '%</td><td>' + totVP2.toFixed(1) + '%</td><td>' + fmtDelta(totVP1, totVP2, true) + '</td></tr>';
+  const tCard = '<div class="section-card"><div class="section-header"><h3>Сравнительная таблица по группам и сотрудникам (' + (c.perDay ? 'в среднем за 1 день' : 'суммарно за период') + ')</h3><span style="font-size:12px;color:var(--text-muted);">Период 1: <b>' + fmtDate(c.p1Start) + '–' + fmtDate(c.p1End) + '</b> (' + m1.daysCount + ' дн.) • Период 2: <b>' + fmtDate(c.p2Start) + '–' + fmtDate(c.p2End) + '</b> (' + m2.daysCount + ' дн.)</span></div><div class="table-wrap staff-table"><table><thead><tr>' + eH1 + '</tr><tr>' + eH2 + '</tr></thead><tbody>' + eTot + rowsHtml + '</tbody></table></div></div>';
+  const empSet = new Set(m2.emps.map(e => e.name));
+  const normSal = (r) => { const s = String(r || '').trim(); if (!s || s.toUpperCase() === 'ПУСТО') return ''; return /дц/i.test(s) ? 'ДЦ' : s; };
+  const planSalons = (STATE.data.ref.regionPlans || []).map(rp => normSal(rp.region || rp.name)).filter(Boolean);
+  const dataSalons = [...STATE.data.leads.map(x => normSal(x.region)), ...STATE.data.consents.map(x => normSal(x.region)), ...STATE.data.visits.map(x => normSal(x.region))].filter(Boolean);
+  const salonNames = [...new Set([...planSalons, ...dataSalons])];
+  let totSCold1 = 0, totSCold2 = 0, totSL1 = 0, totSL2 = 0, totSC1 = 0, totSC2 = 0, totSV1 = 0, totSV2 = 0, totSD1 = 0, totSD2 = 0;
+  const salonRowsHtml = salonNames.map(sal => {
+    const sCold1 = STATE.data.leads.filter(x => normSal(x.region) === sal && x.date >= c.p1Start && x.date <= c.p1End && (c.sv === 'ALL' || empSet.has(x.staff))).length / div1;
+    const sCold2 = STATE.data.leads.filter(x => normSal(x.region) === sal && x.date >= c.p2Start && x.date <= c.p2End && (c.sv === 'ALL' || empSet.has(x.staff))).length / div2;
+    const sL1 = STATE.data.leads.filter(x => normSal(x.region) === sal && x.isLiquid && x.date >= c.p1Start && x.date <= c.p1End && (c.sv === 'ALL' || empSet.has(x.staff))).length / div1;
+    const sL2 = STATE.data.leads.filter(x => normSal(x.region) === sal && x.isLiquid && x.date >= c.p2Start && x.date <= c.p2End && (c.sv === 'ALL' || empSet.has(x.staff))).length / div2;
+    const sC1 = STATE.data.consents.filter(x => normSal(x.region) === sal && x.date >= c.p1Start && x.date <= c.p1End && (c.sv === 'ALL' || empSet.has(x.staff))).length / div1;
+    const sC2 = STATE.data.consents.filter(x => normSal(x.region) === sal && x.date >= c.p2Start && x.date <= c.p2End && (c.sv === 'ALL' || empSet.has(x.staff))).length / div2;
+    const sV1All = STATE.data.visits.filter(x => normSal(x.region) === sal && x.date >= c.p1Start && x.date <= c.p1End && (c.sv === 'ALL' || empSet.has(x.staff)));
+    const sV2All = STATE.data.visits.filter(x => normSal(x.region) === sal && x.date >= c.p2Start && x.date <= c.p2End && (c.sv === 'ALL' || empSet.has(x.staff)));
+    const sV1 = sV1All.filter(x => x.visitType !== 'Повторный визит').length / div1, sV2 = sV2All.filter(x => x.visitType !== 'Повторный визит').length / div2;
+    const sD1 = sV1All.filter(x => x.status === 'Сделка').length / div1, sD2 = sV2All.filter(x => x.status === 'Сделка').length / div2;
+    totSCold1 += sCold1; totSCold2 += sCold2; totSL1 += sL1; totSL2 += sL2; totSC1 += sC1; totSC2 += sC2; totSV1 += sV1; totSV2 += sV2; totSD1 += sD1; totSD2 += sD2;
+    const lPct1 = sCold1 > 0 ? (sL1 / sCold1) * 100 : 0, lPct2 = sCold2 > 0 ? (sL2 / sCold2) * 100 : 0;
+    const dPct1 = sC1 > 0 ? (sV1 / sC1) * 100 : 0, dPct2 = sC2 > 0 ? (sV2 / sC2) * 100 : 0;
+    const vPct1 = sL1 > 0 ? (sV1 / sL1) * 100 : 0, vPct2 = sL2 > 0 ? (sV2 / sL2) * 100 : 0;
+    return '<tr><td style="text-align:left;font-weight:600;">' + sal + '</td><td>' + fmtVal(sCold1) + '</td><td>' + fmtVal(sCold2) + '</td><td>' + fmtDelta(sCold1, sCold2) + '</td><td>' + fmtVal(sL1) + '</td><td>' + fmtVal(sL2) + '</td><td>' + fmtDelta(sL1, sL2) + '</td><td>' + lPct1.toFixed(1) + '%</td><td>' + lPct2.toFixed(1) + '%</td><td>' + fmtDelta(lPct1, lPct2, true) + '</td><td>' + fmtVal(sC1) + '</td><td>' + fmtVal(sC2) + '</td><td>' + fmtDelta(sC1, sC2) + '</td><td style="border-left:2px solid #e2e8f0;"><b>' + fmtVal(sV1) + '</b></td><td><b>' + fmtVal(sV2) + '</b></td><td>' + fmtPairBars(sV1, sV2) + '</td><td>' + fmtDelta(sV1, sV2) + '</td><td style="border-left:2px solid #cbd5e1;">' + fmtVal(sD1) + '</td><td>' + fmtVal(sD2) + '</td><td>' + fmtDelta(sD1, sD2) + '</td><td>' + dPct1.toFixed(1) + '%</td><td>' + dPct2.toFixed(1) + '%</td><td>' + fmtDelta(dPct1, dPct2, true) + '</td><td>' + vPct1.toFixed(1) + '%</td><td>' + vPct2.toFixed(1) + '%</td><td>' + fmtDelta(vPct1, vPct2, true) + '</td></tr>';
+  }).join('');
+  const totSLPct1 = totSCold1 > 0 ? (totSL1 / totSCold1) * 100 : 0, totSLPct2 = totSCold2 > 0 ? (totSL2 / totSCold2) * 100 : 0;
+  const totDPct1 = totSC1 > 0 ? (totSV1 / totSC1) * 100 : 0, totDPct2 = totSC2 > 0 ? (totSV2 / totSC2) * 100 : 0;
+  const totSVPct1 = totSL1 > 0 ? (totSV1 / totSL1) * 100 : 0, totSVPct2 = totSL2 > 0 ? (totSV2 / totSL2) * 100 : 0;
+  const sH1 = '<th rowspan="2" style="text-align:left;">Автосалон</th>' + mkTh('Холодные',3) + mkTh('Ликвидные',3) + mkTh('% Ликвидн.',3) + mkTh('Согласия',3) + mkTh('Визиты (П1 vs П2)',4,'border-left:2px solid #cbd5e1;') + mkTh('Сделки',3,'border-left:2px solid #cbd5e1;') + mkTh('Доезжаемость %',3) + mkTh('Чистая конв. %',3);
+  const sH2 = mkSub3() + mkSub3() + mkSub3() + mkSub3() + mkSub4('border-left:2px solid #cbd5e1;') + mkSub3('border-left:2px solid #cbd5e1;') + mkSub3() + mkSub3();
+  const sTot = '<tr style="background:#fff1f2;font-weight:800;"><td style="text-align:left;">ИТОГО ПО САЛОНАМ</td><td>' + fmtVal(totSCold1) + '</td><td>' + fmtVal(totSCold2) + '</td><td>' + fmtDelta(totSCold1, totSCold2) + '</td><td>' + fmtVal(totSL1) + '</td><td>' + fmtVal(totSL2) + '</td><td>' + fmtDelta(totSL1, totSL2) + '</td><td>' + totSLPct1.toFixed(1) + '%</td><td>' + totSLPct2.toFixed(1) + '%</td><td>' + fmtDelta(totSLPct1, totSLPct2, true) + '</td><td>' + fmtVal(totSC1) + '</td><td>' + fmtVal(totSC2) + '</td><td>' + fmtDelta(totSC1, totSC2) + '</td><td style="border-left:2px solid #cbd5e1;">' + fmtVal(totSV1) + '</td><td>' + fmtVal(totSV2) + '</td><td>' + fmtPairBars(totSV1, totSV2) + '</td><td>' + fmtDelta(totSV1, totSV2) + '</td><td style="border-left:2px solid #cbd5e1;">' + fmtVal(totSD1) + '</td><td>' + fmtVal(totSD2) + '</td><td>' + fmtDelta(totSD1, totSD2) + '</td><td>' + totDPct1.toFixed(1) + '%</td><td>' + totDPct2.toFixed(1) + '%</td><td>' + fmtDelta(totDPct1, totDPct2, true) + '</td><td>' + totSVPct1.toFixed(1) + '%</td><td>' + totSVPct2.toFixed(1) + '%</td><td>' + fmtDelta(totSVPct1, totSVPct2, true) + '</td></tr>';
+  const sCard = '<div class="section-card" style="margin-top:20px;"><div class="section-header"><h3>Сравнительная таблица по автосалонам (' + (c.perDay ? 'в среднем за 1 день' : 'суммарно за период') + ')</h3><span style="font-size:12px;color:var(--text-muted);">Полная воронка по дилерским центрам</span></div><div class="table-wrap staff-table"><table><thead><tr>' + sH1 + '</tr><tr>' + sH2 + '</tr></thead><tbody>' + sTot + salonRowsHtml + '</tbody></table></div></div>';
+  document.getElementById('tabContent').innerHTML = fBar + kGrid + tCard + sCard;
+  if (!STATE.cmpCols || STATE.cmpCols.liqPct === undefined) STATE.cmpCols = { cold: true, liq: true, liqPct: false, ans: true, cons: true, consPct: false, vis: true, deals: true, doezd: true, convPct: true };
+  const cc = STATE.cmpCols, colKeys = [['cold','Холодные'],['liq','Ликвидные'],['liqPct','% Ликвидности'],['ans','Отвеч. (≥40с)'],['cons','Согласия'],['consPct','Конв. в согл. %'],['vis','Визиты'],['deals','Сделки'],['doezd','Доезжаемость %'],['convPct','Чистая конв. %']];
+  const colBar = document.createElement('div'); colBar.className = 'filters-card'; colBar.style.cssText = 'padding:10px 16px;margin-top:-6px;margin-bottom:16px;align-items:center;gap:8px;flex-wrap:wrap;';
+  colBar.innerHTML = '<span style="font-size:12px;font-weight:700;color:#475569;margin-right:4px;">Столбцы таблиц:</span>' + colKeys.map(([k,lbl]) => '<button type="button" onclick="STATE.cmpCols.'+k+'=!STATE.cmpCols.'+k+';renderOutboundCompare()" style="padding:4px 10px;border-radius:999px;border:1px solid;font-size:12px;font-weight:600;cursor:pointer;'+(cc[k]?'background:#be123c;color:#fff;border-color:#be123c;':'background:#f8fafc;color:#475569;border-color:#cbd5e1;')+'">'+(cc[k]?'✓ ':'+ ')+lbl+'</button>').join('') + '<button type="button" onclick="STATE.cmpCols={cold:true,liq:true,liqPct:true,ans:true,cons:true,consPct:true,vis:true,deals:true,doezd:true,convPct:true};renderOutboundCompare()" style="margin-left:auto;padding:4px 10px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;font-size:11px;font-weight:600;color:#334155;cursor:pointer;">Показать все</button>';
+  const tc = document.getElementById('tabContent'); if (tc && tc.children.length > 1) tc.insertBefore(colBar, tc.children.item(1));
+  const tbls = tc ? tc.querySelectorAll('table') : null;
+  const toggleCols = (tbl, map) => { if (!tbl) return; const r0 = tbl.rows.item(0), r1 = tbl.rows.item(1); let cIdx = 1; map.forEach(([key, span], hIdx) => { const show = cc[key]; if (r0 && r0.cells.item(hIdx + 1)) r0.cells.item(hIdx + 1).style.display = show ? '' : 'none'; for (let k = 0; k < span; k++) { if (r1 && r1.cells.item(cIdx - 1)) r1.cells.item(cIdx - 1).style.display = show ? '' : 'none'; for (let r = 2; r < tbl.rows.length; r++) { const rowEl = tbl.rows.item(r); if (rowEl && rowEl.cells.item(cIdx)) rowEl.cells.item(cIdx).style.display = show ? '' : 'none'; } cIdx++; } }); };
+  if (tbls) { toggleCols(tbls.item(0), [['cold',3],['liq',3],['liqPct',3],['ans',3],['cons',3],['consPct',3],['vis',4],['deals',3],['doezd',3],['convPct',3]]); toggleCols(tbls.item(1), [['cold',3],['liq',3],['liqPct',3],['cons',3],['vis',4],['deals',3],['doezd',3],['convPct',3]]); }
+}
+
     function renderCurrentTab() {
 
       if (!STATE.data) return;
@@ -9233,6 +9386,7 @@ drawLineChart(rows.map(r => r.date.slice(8, 10)), [
 
       else if (STATE.tab === 'out-audit') renderOutboundAudit();
       else if (STATE.tab === 'out-plan') renderOutboundPlanning();
+      else if (STATE.tab === 'out-compare') renderOutboundCompare();
 
       else if (STATE.tab === 'in-days') renderInboundDays();
 
