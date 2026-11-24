@@ -4768,11 +4768,13 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
       const { group, staffMode, singleStaff, staffSortKey, staffSortDir } = STATE.filters;
 
-      const empList = Object.values(ref.vmtp).filter(e => group === 'ALL' || e.sv === group);
+      const employees = Object.values(ref.vmtp);
+      const empList = employees.filter(e => group === 'ALL' || e.sv === group);
 
 
 
-      const activeDays = allDates.filter(d => calls.some(c => c.date === d && c.dept === 'ВМТП' && c.status !== 'Пропущенный звонок')).length || 1;
+      const activeDates = allDates.filter(d => calls.some(c => c.date === d && c.dept === 'ВМТП' && c.status !== 'Пропущенный звонок'));
+      const activeDays = activeDates.length || 1;
 
 
 
@@ -4894,6 +4896,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
 
 
+      let flightRows = rows;
       let bodyHtml = '';
 
       if (staffMode === 'all') {
@@ -5068,7 +5071,8 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
         const target = sortedByName.find(e => e.name === singleStaff) || sortedByName.find(Boolean);
 
-        const st = target ? calcEmp(target) : null;
+        const st = rows.find(row => row.emp === target);
+        flightRows = st ? [st] : [];
 
         const daily = target ? allDates.map(d => {
 
@@ -5184,7 +5188,21 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
         </div>
 
+        <div id="winterFlightMount"></div>
         ${bodyHtml}`;
+
+      const names = new Set(employees.map(emp => emp.name));
+      mountWinterFlight({
+        profiles: flightRows.map(row => ({
+          name: row.name, sv: row.emp.sv, plan: row.plan, vis: row.visits, forecastPct: row.forecastNum
+        })),
+        activeDays,
+        remCalendarDays: Math.max(0, daysInMonth - Number(activeDates.at(-1)?.slice(8, 10) || 0)),
+        kcTotals: {
+          plan: employees.reduce((sum, emp) => sum + (emp.planVisits || 0), 0),
+          vis: visits.reduce((sum, visit) => sum + Number(names.has(visit.staff) && visit.visitType !== 'Повторный визит'), 0)
+        }
+      });
 
     }
 
@@ -9685,8 +9703,9 @@ drawLineChart(rows.map(r => r.date.slice(8, 10)), [
         wake();
       }
       function updateTotals(rows,pkg) {
-        const visits=rows.reduce((sum,row)=>sum+row.vis,0);
-        const plan=Math.round(rows.reduce((sum,row)=>sum+row.plan,0));
+        const totals=demoStep<0 ? pkg.kcTotals : null;
+        const visits=totals?.vis ?? rows.reduce((sum,row)=>sum+row.vis,0);
+        const plan=Math.round(totals?.plan ?? rows.reduce((sum,row)=>sum+row.plan,0));
         const left=Math.max(0,plan-visits);
         const actual=pkg.activeDays>0 ? visits/pkg.activeDays : 0;
         const required=pkg.remCalendarDays>0 ? left/pkg.remCalendarDays : 0;
@@ -9715,6 +9734,11 @@ drawLineChart(rows.map(r => r.date.slice(8, 10)), [
       return {root,update,demo(enabled=true) { if(!root.isConnected) return; demoStep=enabled?demoStep+1:-1; update(packageRef); }};
     }
     let winterFlight;
+    function mountWinterFlight(pkg) {
+      winterFlight ??= createWinterFlight();
+      document.getElementById("winterFlightMount").replaceWith(winterFlight.root);
+      winterFlight.update(pkg);
+    }
     window.sleighDemo = (enabled=true) => winterFlight?.demo(enabled);
 
     function renderStaffPersonalDashboard() {
@@ -9850,9 +9874,7 @@ drawLineChart(rows.map(r => r.date.slice(8, 10)), [
             </table>
           </div>
         </div>`;
-      winterFlight ??= createWinterFlight();
-      document.getElementById("winterFlightMount").replaceWith(winterFlight.root);
-      winterFlight.update(pkg);
+      mountWinterFlight(pkg);
     }
 
     function setComparePreset(mode) {
