@@ -1468,8 +1468,16 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   .btn { font-size: 14px; min-height: 40px; }
   .btn-outline { background: #fff; color: var(--navy); border-color: #c9d4e3; }
   .btn-outline:hover { background: #edf2f9; }
-  #exportStaffBtn { background: var(--navy); color: #fff; }
-  #exportStaffBtn:hover { background: #293b58; }
+  #reportLogin { width: min(440px, calc(100% - 32px)); max-height: calc(100% - 32px); margin: auto; padding: 28px; border: 0; border-radius: 16px; color: var(--navy); box-shadow: 0 18px 60px #17213736; }
+  #reportLogin::backdrop { background: #17213799; }
+  #reportLogin form { display: grid; gap: 12px; }
+  #reportLogin h2 { font-size: 24px; }
+  #reportLoginSource { color: var(--text-muted); overflow-wrap: anywhere; }
+  #reportLogin label { display: grid; gap: 6px; font-weight: 600; }
+  #reportLogin input { width: 100%; border: 1px solid #c9d4e3; border-radius: 8px; padding: 10px 12px; font: inherit; }
+  #reportLoginMessage { font-size: 14px; }
+  #reportLoginMessage[data-error="true"] { color: #a1263d; }
+  .login-actions { display: flex; flex-wrap: wrap; gap: 10px; }
 
   .container { max-width: 1760px; padding: clamp(16px, 3vw, 40px); }
   #cloudReportStatus { color: var(--text-muted); font-size: 13px; }
@@ -1892,9 +1900,8 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     </div>
     <div class="topbar-actions">
       <div id="fileStatus" class="file-status" role="status">Файл не загружен</div>
-      <button id="exportStaffBtn" class="btn hidden" onclick="exportStaffPackage()">Выгрузить для сотрудников</button>
-      <button id="reloadBtn" class="btn btn-outline hidden" onclick="document.getElementById('excelInput').click()">Загрузить другой файл</button>
-      <input type="file" id="excelInput" accept=".xlsx,.xls,.smstaff,.json" class="hidden">
+      <button type="button" id="reportLogout" class="btn btn-outline hidden">Выйти</button>
+      <input type="file" id="excelInput" accept=".xlsx,.xls" class="hidden">
     </div>
   </header>
 
@@ -1905,17 +1912,17 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       <div class="upload-layout">
         <div class="upload-main">
           <h2>Открыть отчёт</h2>
-          <p>Загрузите выгрузку Excel для просмотра аналитики или файл сотрудника для входа в личный кабинет.</p>
+          <p>Откройте Excel-файл сразу или войдите по имени, фамилии и паролю, чтобы открыть отчёт из облака.</p>
           <div class="drop-area">
             <span class="file-tile" aria-hidden="true">XLSX</span>
             <div>
               <div class="drop-title">Перетащите файл сюда</div>
-              <div class="file-types">.xlsx, .xls, .smstaff, .json</div>
+              <div class="file-types">.xlsx, .xls</div>
             </div>
           </div>
           <div class="upload-actions">
             <button class="btn btn-primary" onclick="pickExcelFileWithMemory()">Выбрать файл</button>
-            <button type="button" id="applyCloudReportBtn" class="btn btn-outline hidden"></button>
+            <button type="button" id="applyCloudReportBtn" class="btn btn-outline">Войти с отчётом из облака</button>
             <div id="quickLastFileWrap" class="hidden">
               <button id="quickLastFileBtn" class="btn btn-outline" onclick="loadLastRememberedFile()">Загрузить последний файл</button>
             </div>
@@ -1935,6 +1942,20 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
         </aside>
       </div>
     </section>
+
+    <dialog id="reportLogin" aria-labelledby="reportLoginTitle">
+      <form id="reportLoginForm">
+        <h2 id="reportLoginTitle">Вход в аналитику</h2>
+        <p id="reportLoginSource">Последний сохранённый отчёт из облака</p>
+        <label>Имя и фамилия<input id="reportLoginName" name="username" autocomplete="username" required autofocus></label>
+        <label>Пароль<input id="reportLoginPassword" name="password" type="password" autocomplete="current-password" required></label>
+        <p id="reportLoginMessage" role="status" aria-atomic="true"></p>
+        <div class="login-actions">
+          <button type="submit" id="reportLoginSubmit" class="btn btn-primary">Войти</button>
+          <button type="button" id="reportLoginCancel" class="btn btn-outline">Назад</button>
+        </div>
+      </form>
+    </dialog>
 
     <div id="uploadLoadingBox" class="sm-loader-overlay hidden">
       <div class="sm-loader-card"><div class="frost-scene" aria-hidden="true"><svg focusable="false"><rect width="100%" height="100%" fill="url(#frost-sky)"/><svg x="6%" y="7" width="45" height="32" viewBox="0 0 45 32"><path d="M21 2a12 12 0 1 0 8 18A13 13 0 0 1 21 2Z" fill="#ffdfa2"/><path d="m36 3 1 3 3 1-3 1-1 3-1-3-3-1 3-1Z" fill="#fff0be"/></svg><use href="#village-loading" width="100%" height="100%"/></svg></div>
@@ -2032,6 +2053,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       filters: { group: 'ALL', region: 'ALL', staff: 'ALL', staffMode: 'all', singleStaff: '', reachMode: 'days', inboundMode: 'all', inboundHoursOnly: false, uniqueCalls: false, salonMetric: 'visits', salonFilter: 'ALL', showDaysPlan: false, showSalonPlan: false, salonChartMetric: 'visits', hourMode: 'avg', hourDay: '', staffSortKey: 'planNum', staffSortDir: 'desc', staffHourMode: 'avg', staffHourMetric: 'calls', staffHourDay: '', staffCalOpen: false },
 
       data: null,
+      staffDashboard: null,
 
       chart: null
 
@@ -2749,77 +2771,28 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       };
     }
 
-    function applyReport(report) {
-      STATE.staffPackage = null;
-      STATE.staffLoggedUser = null;
+    function showManagerReport(report) {
       STATE.data = report;
-
-      const { fileName, ref } = report;
-
-      const vmtpList = Object.keys(ref.vmtp);
-
+      const vmtpList = Object.keys(report.ref.vmtp);
       STATE.filters.singleStaff = vmtpList[0] || '';
 
+      const dash = document.getElementById('dashboardApp');
+      dash.classList.remove('staff-view');
+      dash.querySelector('.nav-wrapper').style.removeProperty('display');
 
-
-      document.getElementById('fileStatus').textContent = `${fileName} • ВМТП: ${vmtpList.length} чел.`;
-
-      document.getElementById('reloadBtn').classList.remove('hidden'); const expB = document.getElementById('exportStaffBtn'); if (expB) expB.classList.remove('hidden');
-
-      const upScreen = document.getElementById('uploadScreen');
-
-      const dashApp = document.getElementById('dashboardApp');
-      dashApp.classList.remove('staff-view');
-      dashApp.querySelector('.nav-wrapper')?.style.removeProperty('display');
-
-      upScreen.classList.add('upload-screen-exit');
-      setTimeout(() => {
-        upScreen.classList.add('hidden');
-        upScreen.classList.remove('upload-screen-exit');
-        upScreen.style.setProperty('display', 'none', 'important');
-
-        const wScreen = document.getElementById('welcomeScreen');
-        if (wScreen) {
-          dashApp.classList.add('hidden');
-          dashApp.style.setProperty('display', 'none', 'important');
-          wScreen.classList.remove('hidden');
-          wScreen.style.setProperty('display', 'flex', 'important');
-
-          const infoEl = document.getElementById('welcomeFileInfo');
-          const pEl = document.getElementById('wStatPeriod');
-          const cEl = document.getElementById('wStatCalls');
-          if (infoEl) infoEl.textContent = STATE.data.fileName;
-          updateWelcome(false);
-          if (pEl) {
-            const ym = STATE.data.activeYM || '';
-            const parts = ym.split('-');
-            const months = ['', 'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
-            const yStr = parts.at(0) || '';
-            const mNum = Number(parts.at(1) || 0);
-            const mName = months.at(mNum) || ym;
-            const activeDates = (STATE.data.allDates || []).filter(d => (STATE.data.calls || []).some(c => c.date === d && c.status !== 'Пропущенный звонок'));
-            if (activeDates.length) {
-              const dStart = String(activeDates.at(0)).slice(8, 10);
-              const dEnd = String(activeDates.at(-1)).slice(8, 10);
-              pEl.textContent = `${yStr} ${mName} ${dStart}–${dEnd}`;
-            } else {
-              pEl.textContent = `${yStr} ${mName}`;
-            }
-          }
-          if (cEl) cEl.textContent = (STATE.data.calls ? STATE.data.calls.length : 0).toLocaleString('ru-RU');
-        } else {
-          dashApp.classList.remove('hidden');
-          dashApp.style.display = 'block';
-          dashApp.classList.remove('dashboard-animate-in');
-          void dashApp.offsetWidth;
-          dashApp.classList.add('dashboard-animate-in');
-          renderCurrentTab();
-        }
-      }, 220);
-
+      document.getElementById('welcomeFileInfo').textContent = report.fileName;
+      const month = new Date(report.activeYM + '-01T00:00:00');
+      const monthLabel = month.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
+      const callDates = new Set(report.calls.filter(c => c.status !== 'Пропущенный звонок').map(c => c.date));
+      const dates = report.allDates.filter(date => callDates.has(date));
+      const period = dates.length ? monthLabel + ' · ' + dates[0].slice(8) + '–' + dates.at(-1).slice(8) : monthLabel;
+      document.getElementById('wStatPeriod').textContent = period;
+      document.getElementById('wStatCalls').textContent = report.calls.length.toLocaleString('ru-RU');
+      const welcome = document.getElementById('welcomeScreen');
+      welcome.classList.remove('hidden');
+      welcome.style.display = 'flex';
+      document.getElementById('openReportBtn').focus();
     }
-
-
 
     function setUploadLoading(isLoading, msg) {
 
@@ -2845,44 +2818,21 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
 
 
-    // Обработка выбора или перетаскивания Excel-файла
-
-    function encodeStaffPayload(obj) {
-      const json = JSON.stringify(obj);
-      const bytes = new TextEncoder().encode(json);
-      let bin = '';
-      for (let i = 0; i < bytes.length; i++) {
-        bin += String.fromCharCode(bytes[i] ^ ((i * 31 + 73) & 255));
-      }
-      return btoa(bin);
-    }
-
-    function decodeStaffPayload(b64) {
-      const bin = atob(b64.trim());
-      const bytes = new Uint8Array(bin.length);
-      for (let i = 0; i < bin.length; i++) {
-        bytes[i] = bin.charCodeAt(i) ^ ((i * 31 + 73) & 255);
-      }
-      return JSON.parse(new TextDecoder().decode(bytes));
-    }
-
-    function exportStaffPackage() {
-      if (!STATE.data) return;
-      const { allDates, daysInMonth, ref, leads, calls, visits, consents, fixes } = STATE.data;
+    function buildStaffDashboard(report, employee) {
+      const { allDates, daysInMonth, ref, leads, calls, visits, consents, fixes } = report;
       const activeDatesList = allDates.filter(d => calls.some(c => c.date === d && c.dept === 'ВМТП' && c.status !== 'Пропущенный звонок'));
       const activeDays = activeDatesList.length || 1;
       const lastDateStr = activeDatesList.length ? activeDatesList[activeDatesList.length - 1] : '';
       const lastDayNum = lastDateStr ? Number(lastDateStr.slice(8, 10)) : activeDays;
       const remCalendarDays = Math.max(0, daysInMonth - lastDayNum);
 
-      const allEmps = Object.values(ref.vmtp);
-      const regEmps = allEmps.filter(e => String(e.status || '').toLowerCase() === 'штатный' && (e.shifts || 0) > 0);
+      const regEmps = Object.values(ref.vmtp).filter(e => String(e.status || '').toLowerCase() === 'штатный' && (e.shifts || 0) > 0);
 
       const calcEmpRaw = (emp) => {
         const eLeads = leads.filter(x => x.staff === emp.name);
         const cold = eLeads.length;
         const liquid = eLeads.filter(x => x.isLiquid).length;
-        const eCalls = (typeof filterCallsList === 'function' ? filterCallsList : (arr => arr))(calls.filter(c => c.staff === emp.name && c.status !== 'Пропущенный звонок'), true);
+        const eCalls = calls.filter(c => c.staff === emp.name && c.status !== 'Пропущенный звонок');
         const totalCalls = eCalls.filter(c => !c._onlyAns).length;
         const answered = eCalls.filter(x => x.sec >= 40).length;
         const eCons = consents.filter(x => x.staff === emp.name).length;
@@ -2930,8 +2880,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
         };
       };
 
-      const profiles = allEmps.map(calcEmpRaw);
-      const regProfiles = profiles.filter(p => regEmps.some(e => e.name === p.name));
+      const regProfiles = regEmps.map(calcEmpRaw);
 
       const avgObj = (arr) => {
         const n = arr.length || 1;
@@ -2960,140 +2909,164 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
         groupAvgs[sv] = avgObj(regProfiles.filter(x => x.sv === sv));
       });
 
-      const payload = {
-        v: 1,
-        generatedAt: new Date().toISOString(),
-        periodLabel: lastDateStr ? fmtDate(lastDateStr) : '',
+      return {
         activeDays,
         daysInMonth,
         remCalendarDays,
         kcAvg,
         groupAvgs,
-        profiles
+        profile: calcEmpRaw(employee)
       };
-
-      const blob = new Blob([JSON.stringify({ format: 'SM_STAFF_V1', data: encodeStaffPayload(payload) })], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `SokolMotors_Staff_${lastDateStr ? fmtDate(lastDateStr) : 'export'}.smstaff`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
     }
 
-    function handleFileUpload(file) {
-      if (!file) return;
-      const selection = ++reportSelection;
-      if (cloudReportStatus.textContent === cloudLoadingText) setCloudStatus('');
+    function showReportFile(report) {
+      document.getElementById('uploadScreen').classList.add('hidden');
+      document.getElementById('reportLogout').classList.remove('hidden');
+      document.getElementById('fileStatus').textContent = report.savedAt ? report.fileName + ' · ' + report.savedAt : report.fileName;
+    }
+
+    let excelReading = false;
+
+    async function handleFileUpload(file) {
+      if (!file || excelReading || loginDialog.open || STATE.data || STATE.staffDashboard) return;
       const errBox = document.getElementById('uploadError');
       errBox.style.display = 'none';
-
-      if (file.name.toLowerCase().endsWith('.smstaff') || file.name.toLowerCase().endsWith('.json')) {
-        setUploadLoading(false);
-        const txtReader = new FileReader();
-        txtReader.onload = function(ev) {
-          if (selection !== reportSelection) return;
-          try {
-            const parsed = JSON.parse(ev.target.result);
-            if (parsed.format !== 'SM_STAFF_V1' || !parsed.data) {
-              throw new Error('Неверный формат файла сотрудника (.smstaff)');
-            }
-            const staffPkg = decodeStaffPayload(parsed.data);
-            STATE.staffPackage = staffPkg;
-            STATE.staffLoggedUser = null;
-            setUploadLoading(false);
-            document.getElementById('fileStatus').textContent = 'Файл для сотрудников: до ' + (staffPkg.periodLabel || '');
-            document.getElementById('reloadBtn').classList.remove('hidden');
-            const expBtn = document.getElementById('exportStaffBtn');
-            if (expBtn) expBtn.classList.add('hidden');
-            const upSc = document.getElementById('uploadScreen');
-            const dashEl = document.getElementById('dashboardApp');
-            const wScreen = document.getElementById('welcomeScreen');
-            if (upSc) { upSc.classList.add('hidden'); upSc.style.setProperty('display', 'none', 'important'); }
-            if (dashEl) { dashEl.classList.add('hidden'); dashEl.style.setProperty('display', 'none', 'important'); }
-
-            if (wScreen) {
-              wScreen.classList.remove('hidden');
-              wScreen.style.setProperty('display', 'flex', 'important');
-              const infoEl = document.getElementById('welcomeFileInfo');
-              const pEl = document.getElementById('wStatPeriod');
-              const cEl = document.getElementById('wStatCalls');
-              if (infoEl) infoEl.textContent = file.name;
-               updateWelcome(true);
-              if (pEl) pEl.textContent = staffPkg.periodLabel ? ('до ' + staffPkg.periodLabel) : 'Текущий месяц';
-              if (cEl) cEl.textContent = 'Личный кабинет';
-            } else {
-              showStaffLoginModal();
-            }
-          } catch (err) {
-            errBox.textContent = 'Ошибка открытия файла сотрудника: ' + err.message;
-            errBox.style.display = 'block';
-          }
-        };
-        txtReader.readAsText(file, 'utf-8');
+      if (!/\.xlsx?$/i.test(file.name)) {
+        errBox.textContent = 'Выберите Excel-файл в формате .xlsx или .xls.';
+        errBox.style.display = 'block';
         return;
       }
-
-      setUploadLoading(true, 'Загрузка файла «' + file.name + '»...');
-
-
-
-      const reader = new FileReader();
-
-      reader.onload = function(e) {
-        if (selection !== reportSelection) return;
-
-        setUploadLoading(true, 'Анализ вкладок Excel и расчёт показателей...');
-
-        // Даём браузеру 50 мс отрисовать анимацию перед запуском парсинга XLSX
-
-        setTimeout(() => {
-          if (selection !== reportSelection) return;
-
-          try {
-
-            const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
-
-            const report = parseWorkbook(wb, file.name);
-            applyReport(report);
-            saveLatestCloudReport(report);
-
-          } catch (err) {
-
-            errBox.textContent = 'Ошибка при чтении файла: ' + err.message;
-
-            errBox.style.display = 'block';
-
-            console.error(err);
-
-          } finally {
-
-            setUploadLoading(false);
-
-          }
-
-        }, 50);
-
-      };
-
-      reader.onerror = function() {
-        if (selection !== reportSelection) return;
-
-        setUploadLoading(false);
-
-        errBox.textContent = 'Не удалось прочитать файл с диска.';
-
+      excelReading = true;
+      setUploadLoading(true, 'Читаю Excel и рассчитываю показатели…');
+      try {
+        const buffer = await file.arrayBuffer();
+        const report = parseWorkbook(XLSX.read(new Uint8Array(buffer), { type: 'array' }), file.name);
+        showReportFile(report);
+        showManagerReport(report);
+        saveLatestCloudReport(report);
+      } catch (error) {
+        console.error(error);
+        errBox.textContent = 'Не удалось открыть Excel. ' + error.message;
         errBox.style.display = 'block';
-
-      };
-
-      reader.readAsArrayBuffer(file);
-
+      } finally {
+        setUploadLoading(false);
+        excelReading = false;
+      }
     }
 
+    const managerSurnames = new Set(['петрищева', 'улезько', 'подчасова', 'безверхий']);
+    const passwordHashes = {
+      manager: '8cf723a5df30d1ac1a9514704d38cea6cc46b80c44c3b8c301dc875277e29aed',
+      employee: 'b34772036ee6ebaa9ad17fc654340062e3043a14c15c606e373c888917c91604'
+    };
 
+    const loginDialog = document.getElementById('reportLogin');
+    const loginForm = document.getElementById('reportLoginForm');
+    const loginName = document.getElementById('reportLoginName');
+    const loginPassword = document.getElementById('reportLoginPassword');
+    const loginSubmit = document.getElementById('reportLoginSubmit');
+    const loginCancel = document.getElementById('reportLoginCancel');
+    const loginMessage = document.getElementById('reportLoginMessage');
+
+    function nameWords(name) {
+      return (name.toLowerCase().replace(/ё/g, 'е').match(/[\p{L}]+(?:[-‐‑][\p{L}]+)*/gu) || [])
+        .map(word => word.replace(/[‐‑]/g, '-'));
+    }
+
+    async function verifyReportPassword(password, role) {
+      const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(password));
+      return Array.from(new Uint8Array(hash), byte => byte.toString(16).padStart(2, '0')).join('') === passwordHashes[role];
+    }
+
+    function findReportEmployees(ref, loginWords) {
+      const employees = new Map(Object.values(ref.vmtp).map(employee => [employee.name, employee]));
+      for (const name of [...(ref.vhod || []), ...(ref.vsv || [])]) {
+        if (!employees.has(name)) employees.set(name, { name });
+      }
+      return [...employees.values()].filter(employee => loginWords.includes(nameWords(employee.name).at(-1)));
+    }
+
+    function setLoginMessage(message, isError = false) {
+      loginMessage.dataset.error = String(isError);
+      loginMessage.textContent = message;
+    }
+
+    function showReportLogin() {
+      if (excelReading || loginDialog.open || STATE.data || STATE.staffDashboard) return;
+      loginForm.reset();
+      setLoginMessage('');
+      document.getElementById('uploadError').style.display = 'none';
+      loginDialog.showModal();
+    }
+
+    loginCancel.addEventListener('click', () => loginDialog.close());
+    loginDialog.addEventListener('cancel', event => {
+      if (loginSubmit.disabled) event.preventDefault();
+    });
+    loginDialog.addEventListener('close', () => loginForm.reset());
+
+    loginForm.addEventListener('submit', async event => {
+      event.preventDefault();
+      if (loginSubmit.disabled) return;
+      const words = nameWords(loginName.value);
+      if (words.length !== 2) {
+        setLoginMessage('Введите имя и фамилию.', true);
+        loginName.focus();
+        return;
+      }
+      if (!globalThis.crypto?.subtle) {
+        setLoginMessage('Для проверки пароля откройте приложение по HTTPS или из локального HTML-файла.', true);
+        return;
+      }
+      const role = words.some(word => managerSurnames.has(word)) ? 'manager' : 'employee';
+      loginSubmit.disabled = loginCancel.disabled = true;
+      setLoginMessage('Проверяю пароль…');
+      try {
+        const passwordMatches = await verifyReportPassword(loginPassword.value, role);
+        loginPassword.value = '';
+        if (!passwordMatches) {
+          setLoginMessage('Неверная фамилия или пароль.', true);
+          loginPassword.focus();
+          return;
+        }
+
+        setLoginMessage('Загружаю отчёт из облака…');
+        const report = await readLatestCloudReport();
+        if (!report) {
+          setLoginMessage('В облаке пока нет отчёта. Выберите Excel-файл.', true);
+          return;
+        }
+
+        if (role === 'employee') {
+          const matches = findReportEmployees(report.ref, words);
+          if (matches.length !== 1) {
+            setLoginMessage(matches.length ? 'В отчёте несколько сотрудников с такой фамилией.' : 'Сотрудник с такой фамилией не найден в отчёте.', true);
+            loginName.focus();
+            return;
+          }
+          STATE.staffDashboard = buildStaffDashboard(report, matches[0]);
+        }
+
+        loginDialog.close();
+        showReportFile(report);
+        if (role === 'manager') {
+          showManagerReport(report);
+        } else {
+          renderStaffPersonalDashboard();
+        }
+      } catch (error) {
+        console.error(error);
+        setLoginMessage('Ошибка базы. Не удалось загрузить отчёт из облака.', true);
+      } finally {
+        loginPassword.value = '';
+        loginSubmit.disabled = loginCancel.disabled = false;
+      }
+    });
+
+    document.getElementById('reportLogout').addEventListener('click', () => {
+      // Reload to clear the opened report, chart data and all report filters.
+      window.location.reload();
+    });
 
     const firebaseConfig = {
       apiKey: 'AIzaSyA5C3zgPMnMFNEl3BNcqFUYR6MCj944KaQ',
@@ -3107,8 +3080,6 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     const cloudReportStatus = document.getElementById('cloudReportStatus');
     const cloudDateFormat = new Intl.DateTimeFormat('ru-RU', { dateStyle: 'short', timeStyle: 'short' });
     const cloudTextEncoder = new TextEncoder();
-    const cloudLoadingText = 'Загружаю отчёт из облака...';
-    let reportSelection = 0;
     let cloudStore;
     let cloudWrite = Promise.resolve();
 
@@ -3172,52 +3143,25 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       const { sdk, latest } = await getCloudStore();
       const snapshot = await sdk.getDoc(latest);
       const saved = snapshot.data();
-      if (!saved) {
-        cloudReportButton.classList.add('hidden');
-        return null;
-      }
+      if (!saved) return null;
       if (typeof saved.fileName !== 'string' || typeof saved.savedAt?.toDate !== 'function' ||
           typeof saved.compressed !== 'boolean' ||
-          (saved.compressed === true ? !saved.payload?.toUint8Array : typeof saved.payload !== 'string')) {
+          (saved.compressed ? typeof saved.payload?.toUint8Array !== 'function' : typeof saved.payload !== 'string')) {
         throw new Error('Invalid cloud report metadata');
       }
-      const date = cloudDateFormat.format(saved.savedAt.toDate());
-      cloudReportButton.textContent = `Применить последний отчет из облака (${saved.fileName} · ${date})`;
-      cloudReportButton.classList.remove('hidden');
-      return saved;
+
+      const json = saved.compressed
+        ? (await getReportCompression()).decompressFromUint8Array(saved.payload.toUint8Array())
+        : saved.payload;
+      const report = JSON.parse(json);
+      if (!report?.ref?.vmtp || typeof report.activeYM !== 'string' ||
+          !['allDates', 'leads', 'calls', 'visits', 'consents', 'salonConsents', 'fixes'].every(key => Array.isArray(report[key]))) {
+        throw new Error('Invalid cloud report data');
+      }
+      return { ...report, fileName: saved.fileName, savedAt: cloudDateFormat.format(saved.savedAt.toDate()) };
     }
 
-    cloudReportButton.addEventListener('click', async () => {
-      const selection = ++reportSelection;
-      cloudReportButton.disabled = true;
-      setUploadLoading(false);
-      setCloudStatus(cloudLoadingText);
-      try {
-        const saved = await readLatestCloudReport();
-        if (!saved) throw new Error('Cloud report no longer exists');
-        const json = saved.compressed ? (await getReportCompression()).decompressFromUint8Array(saved.payload.toUint8Array()) : saved.payload;
-        const report = JSON.parse(json);
-        if (!report?.ref?.vmtp || typeof report.activeYM !== 'string' ||
-            !['allDates', 'leads', 'calls', 'visits', 'consents', 'salonConsents', 'fixes'].every(key => Array.isArray(report[key]))) {
-          throw new Error('Invalid cloud report data');
-        }
-        if (selection === reportSelection) {
-          document.getElementById('uploadError').style.display = 'none';
-          applyReport({ ...report, fileName: saved.fileName });
-        }
-      } catch (error) {
-        if (selection === reportSelection) showCloudError(error);
-      } finally {
-        cloudReportButton.disabled = false;
-        if (cloudReportStatus.textContent === cloudLoadingText) setCloudStatus('');
-      }
-    });
-
-    readLatestCloudReport().catch(error => {
-      if (!cloudReportStatus.textContent) showCloudError(error);
-    });
-
-
+    cloudReportButton.addEventListener('click', () => showReportLogin());
 
     // Хранилище ссылки на последний открытый Excel-файл (IndexedDB)
 
@@ -3287,7 +3231,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
           const handles = await window.showOpenFilePicker({
 
-            types: [{ description: 'Выгрузка Excel или файл сотрудника (.smstaff)', accept: { 'application/octet-stream': ['.xlsx', '.xls', '.smstaff', '.json'] } }],
+            types: [{ description: 'Выгрузка Excel', accept: { 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'], 'application/vnd.ms-excel': ['.xls'] } }],
 
             multiple: false
 
@@ -3297,7 +3241,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
           if (handle) {
 
-            if (!handle.name.toLowerCase().endsWith('.smstaff')) await saveLastFileHandle(handle);
+            await saveLastFileHandle(handle);
 
             const file = await handle.getFile();
 
@@ -3353,11 +3297,11 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
           const file = await handle.getFile();
 
-          handleFileUpload(file);
+          await handleFileUpload(file);
 
         } else {
 
-          errBox.textContent = 'Доступ к файлу не подтверждён. Нажмите «Выбрать файл (.xlsx / .smstaff)» для ручного выбора.';
+          errBox.textContent = 'Доступ к файлу не подтверждён. Нажмите «Выбрать файл (.xlsx / .xls)» для ручного выбора.';
 
           errBox.style.display = 'block';
 
@@ -3369,6 +3313,8 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
         errBox.style.display = 'block';
 
+      } finally {
+        setUploadLoading(false);
       }
 
     }
@@ -3383,7 +3329,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
       const wrap = document.getElementById('quickLastFileWrap');
 
-      if (handle && btn && wrap) {
+      if (handle && /\.xlsx?$/i.test(handle.name) && btn && wrap) {
 
         btn.textContent = 'Загрузить последний: ' + handle.name;
 
@@ -9557,59 +9503,6 @@ drawLineChart(rows.map(r => r.date.slice(8, 10)), [
         </div>`;
     }
 
-    function showStaffLoginModal() {
-      const upScreen = document.getElementById('uploadScreen');
-      const dash = document.getElementById('dashboardApp');
-      const wScreen = document.getElementById('welcomeScreen');
-      if (wScreen) { wScreen.classList.add('hidden'); wScreen.style.display = 'none'; }
-      if (dash) { dash.classList.add('hidden'); dash.style.setProperty('display', 'none', 'important'); };
-      if (upScreen) {
-        upScreen.classList.remove('hidden'); upScreen.style.setProperty('display', 'block', 'important');
-        upScreen.innerHTML = `
-          <div class="login-village"><div class="frost-scene" aria-hidden="true"><svg focusable="false"><rect width="100%" height="100%" fill="url(#frost-sky)"/><svg x="6%" y="7" width="45" height="32" viewBox="0 0 45 32"><path d="M21 2a12 12 0 1 0 8 18A13 13 0 0 1 21 2Z" fill="#ffdfa2"/><path d="m36 3 1 3 3 1-3 1-1 3-1-3-3-1 3-1Z" fill="#fff0be"/></svg><use href="#village-login" width="100%" height="100%"/></svg></div></div><div style="max-width:440px;margin:0 auto;text-align:center;">
-            <div style="width:56px;height:56px;border-radius:14px;background:#be123c;color:#fff;font-weight:800;font-size:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 8px 20px rgba(190,18,60,0.25);">SM</div>
-            <h2 style="margin:0 0 8px;font-size:21px;color:#18181b;">Вход в личный кабинет МТП</h2>
-            <p style="margin:0 0 20px;font-size:13.5px;color:#52525b;line-height:1.45;">
-              Введите ваши <b>Имя и Фамилию</b>, чтобы открыть личную статистику, прогноз плана и показатели по дням.
-            </p>
-            <input id="staffFioInput" type="text" placeholder="Имя и Фамилия" onkeydown="if(event.key==='Enter') verifyStaffLogin()"
-              style="width:100%;padding:12px 14px;border:1.5px solid #cbd5e1;border-radius:10px;font-size:15px;outline:none;margin-bottom:10px;box-sizing:border-box;">
-            <div id="staffLoginErr" style="display:none;color:#be123c;background:#fff1f2;border:1px solid #fecdd3;padding:8px 12px;border-radius:8px;font-size:12.5px;margin-bottom:12px;text-align:left;"></div>
-            <button class="btn btn-primary" onclick="verifyStaffLogin()" style="width:100%;padding:12px;font-size:14.5px;justify-content:center;">
-              Открыть мою статистику →
-            </button>
-          </div>`;
-        setTimeout(() => { const inp = document.getElementById('staffFioInput'); if (inp) inp.focus(); }, 50);
-      }
-    }
-
-    function verifyStaffLogin() {
-      const pkg = STATE.staffPackage;
-      if (!pkg) return;
-      const raw = (document.getElementById('staffFioInput')?.value || '').trim().toLowerCase().replace(/ё/g, 'е');
-      const errEl = document.getElementById('staffLoginErr');
-      const words = raw.split(/\s+/).filter(Boolean);
-      if (words.length < 2) {
-        errEl.textContent = 'Укажите, пожалуйста, и Имя, и Фамилию (два слова).';
-        errEl.style.display = 'block';
-        return;
-      }
-      const found = (pkg.profiles || []).find(p => {
-        const parts = String(p.name || '').trim().toLowerCase().replace(/ё/g, 'е').split(/\s+/).filter(Boolean);
-        if (!parts.length) return false;
-        const surname = parts[parts.length - 1];
-        const firstPart = parts;
-        return words.includes(surname) || (parts.length > 1 && words.includes(firstPart) && firstPart.length > 3 && surname.length <= 3);
-      });
-      if (!found) {
-        errEl.textContent = 'Сотрудник с такой фамилией не найден в выгрузке. Проверьте правильность написания фамилии.';
-        errEl.style.display = 'block';
-        return;
-      }
-      errEl.style.display = 'none';
-      STATE.staffLoggedUser = found;
-      renderStaffPersonalDashboard();
-    }
     function createWinterFlight() {
       const root = document.createElement('section');
       root.className = 'section-card winter-card';
@@ -9880,9 +9773,9 @@ drawLineChart(rows.map(r => r.date.slice(8, 10)), [
     window.sleighDemo = (enabled=true) => winterFlight?.demo(enabled);
 
     function renderStaffPersonalDashboard() {
-      const pkg = STATE.staffPackage;
-      const u = STATE.staffLoggedUser;
-      if (!pkg || !u) return;
+      const pkg = STATE.staffDashboard;
+      if (!pkg) return;
+      const u = pkg.profile;
 
       const upSc = document.getElementById('uploadScreen');
       if (upSc) {
@@ -9919,12 +9812,11 @@ drawLineChart(rows.map(r => r.date.slice(8, 10)), [
       document.getElementById('tabContent').innerHTML = `
         <div class="filters-card" style="justify-content:space-between;align-items:center;">
           <div>
-            <div style="font-size:11px;font-weight:700;color:#be123c;text-transform:uppercase;letter-spacing:0.8px;">Личный кабинет сотрудника • Группа: ${u.sv}</div>
-            <div style="font-size:20px;font-weight:800;color:#18181b;margin-top:2px;">${u.name}</div>
+            <div style="font-size:11px;font-weight:700;color:#be123c;text-transform:uppercase;letter-spacing:0.8px;">Личный кабинет сотрудника • Группа: <span data-staff-group></span></div>
+            <div style="font-size:20px;font-weight:800;color:#18181b;margin-top:2px;" id="staffDashboardName" tabindex="-1"></div>
           </div>
           <div style="display:flex;gap:10px;align-items:center;">
             <span style="font-size:12px;color:#52525b;">Отработано смен: <b>${u.shifts}</b> • До конца мес.: <b>${pkg.remCalendarDays} дн.</b> (~${remShifts} см.)</span>
-            <button class="btn btn-outline" onclick="showStaffLoginModal()" style="padding:6px 12px;font-size:12px;">Сменить сотрудника</button>
           </div>
         </div>
 
@@ -9962,7 +9854,7 @@ drawLineChart(rows.map(r => r.date.slice(8, 10)), [
                 <tr>
                   <th style="text-align:left;">Показатель</th>
                   <th>Мой результат</th>
-                  <th>Среднее по группе (${u.sv})</th>
+                  <th>Среднее по группе (<span data-staff-group></span>)</th>
                   <th>Среднее по всему КЦ</th>
                 </tr>
               </thead>
@@ -10012,6 +9904,10 @@ drawLineChart(rows.map(r => r.date.slice(8, 10)), [
             </table>
           </div>
         </div>`;
+      const staffName = document.getElementById('staffDashboardName');
+      staffName.textContent = u.name;
+      document.querySelectorAll('#tabContent [data-staff-group]').forEach(label => { label.textContent = u.sv; });
+      staffName.focus();
       mountWinterFlight(pkg);
     }
 
@@ -10167,13 +10063,6 @@ function renderOutboundCompare() {
   if (tbls) { toggleCols(tbls.item(0), [['cold',3],['liq',3],['liqPct',3],['ans',3],['cons',3],['consPct',3],['vis',4],['deals',3],['doezd',3],['convPct',3]]); toggleCols(tbls.item(1), [['cold',3],['liq',3],['liqPct',3],['cons',3],['vis',4],['deals',3],['doezd',3],['convPct',3]]); }
 }
 
-    function updateWelcome(isStaff) {
-      document.getElementById('welcomeScope').textContent = isStaff ? 'Режим' : 'Звонков в базе';
-      const button = document.getElementById('openReportBtn');
-      button.textContent = isStaff ? 'Войти в личный кабинет' : 'Открыть отчёт';
-      button.focus();
-    }
-
     function renderCurrentTab() {
       document.getElementById('reportVillage').setAttribute('href', '#village-' + STATE.tab);
       const title = document.getElementById('reportTitle');
@@ -10207,23 +10096,13 @@ function renderOutboundCompare() {
 
     <script>
     function enterDashboard() {
-      const wScreen = document.getElementById('welcomeScreen');
+      if (!STATE.data) return;
+      document.getElementById('welcomeScreen').classList.add('hidden');
       const dash = document.getElementById('dashboardApp');
-      if (wScreen) {
-        wScreen.classList.add('hidden');
-        wScreen.style.setProperty('display', 'none', 'important');
-      }
-      if (typeof STATE !== 'undefined' && STATE.staffPackage) {
-        if (STATE.staffLoggedUser && typeof renderStaffPersonalDashboard === 'function') renderStaffPersonalDashboard();
-        else if (typeof showStaffLoginModal === 'function') showStaffLoginModal();
-        return;
-      }
-      if (dash) {
-        dash.classList.remove('hidden');
-        dash.style.display = 'block';
-        if (typeof renderCurrentTab === 'function') renderCurrentTab();
-        document.getElementById('reportTitle').focus();
-      }
+      dash.classList.remove('hidden');
+      dash.style.display = 'block';
+      renderCurrentTab();
+      document.getElementById('reportTitle').focus();
     }
   </script>
 <script>
