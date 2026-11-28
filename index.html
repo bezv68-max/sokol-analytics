@@ -2832,7 +2832,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       const lastDayNum = lastDateStr ? Number(lastDateStr.slice(8, 10)) : activeDays;
       const remCalendarDays = Math.max(0, daysInMonth - lastDayNum);
 
-      const regEmps = Object.values(ref.vmtp).filter(e => String(e.status || '').toLowerCase() === 'штатный' && (e.shifts || 0) > 0);
+      const employees = Object.values(ref.vmtp);
 
       const calcEmpRaw = (emp) => {
         const eLeads = leads.filter(x => x.staff === emp.name);
@@ -2886,7 +2886,10 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
         };
       };
 
-      const regProfiles = regEmps.map(calcEmpRaw);
+      const profiles = employees.map(calcEmpRaw);
+      const regProfiles = profiles.filter((profile, i) =>
+        String(employees[i].status || '').toLowerCase() === 'штатный' && profile.shifts > 0
+      );
 
       const avgObj = (arr) => {
         const n = arr.length || 1;
@@ -2921,7 +2924,8 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
         remCalendarDays,
         kcAvg,
         groupAvgs,
-        profile: calcEmpRaw(employee)
+        profiles: profiles.map(({ name, sv, plan, vis, forecastPct }) => ({ name, sv, plan, vis, forecastPct })),
+        profile: profiles.find(p => p.name === employee.name)
       };
     }
 
