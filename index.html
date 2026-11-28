@@ -1472,6 +1472,9 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   #exportStaffBtn:hover { background: #293b58; }
 
   .container { max-width: 1760px; padding: clamp(16px, 3vw, 40px); }
+  #cloudReportStatus { color: var(--text-muted); font-size: 13px; }
+  #cloudReportStatus:not(:empty) { margin-bottom: 10px; }
+  #cloudReportStatus[data-error="true"] { color: #a1263d; }
   .upload-screen {
     max-width: 1080px;
     margin: clamp(16px, 7vh, 92px) auto;
@@ -1897,6 +1900,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
   <main class="container">
     <div id="uploadError" class="error-box" role="alert"></div>
+    <div id="cloudReportStatus" role="status" aria-atomic="true"></div>
     <section id="uploadScreen" class="upload-screen" aria-label="Загрузка файла">
       <div class="upload-layout">
         <div class="upload-main">
@@ -1911,6 +1915,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
           </div>
           <div class="upload-actions">
             <button class="btn btn-primary" onclick="pickExcelFileWithMemory()">Выбрать файл</button>
+            <button type="button" id="applyCloudReportBtn" class="btn btn-outline hidden"></button>
             <div id="quickLastFileWrap" class="hidden">
               <button id="quickLastFileBtn" class="btn btn-outline" onclick="loadLastRememberedFile()">Загрузить последний файл</button>
             </div>
@@ -2718,7 +2723,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
 
 
-      STATE.data = {
+      return {
 
         fileName,
 
@@ -2742,8 +2747,14 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
         fixes
 
       };
+    }
 
+    function applyReport(report) {
+      STATE.staffPackage = null;
+      STATE.staffLoggedUser = null;
+      STATE.data = report;
 
+      const { fileName, ref } = report;
 
       const vmtpList = Object.keys(ref.vmtp);
 
@@ -2758,6 +2769,8 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       const upScreen = document.getElementById('uploadScreen');
 
       const dashApp = document.getElementById('dashboardApp');
+      dashApp.classList.remove('staff-view');
+      dashApp.querySelector('.nav-wrapper')?.style.removeProperty('display');
 
       upScreen.classList.add('upload-screen-exit');
       setTimeout(() => {
@@ -2972,12 +2985,16 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
     function handleFileUpload(file) {
       if (!file) return;
+      const selection = ++reportSelection;
+      if (cloudReportStatus.textContent === cloudLoadingText) setCloudStatus('');
       const errBox = document.getElementById('uploadError');
       errBox.style.display = 'none';
 
       if (file.name.toLowerCase().endsWith('.smstaff') || file.name.toLowerCase().endsWith('.json')) {
+        setUploadLoading(false);
         const txtReader = new FileReader();
         txtReader.onload = function(ev) {
+          if (selection !== reportSelection) return;
           try {
             const parsed = JSON.parse(ev.target.result);
             if (parsed.format !== 'SM_STAFF_V1' || !parsed.data) {
@@ -3019,14 +3036,6 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
         return;
       }
 
-      STATE.staffPackage = null;
-      STATE.staffLoggedUser = null;
-      const dashEl = document.getElementById('dashboardApp');
-      if (dashEl) {
-        dashEl.classList.remove('staff-view');
-         const nw = dashEl.querySelector('.nav-wrapper');
-        if (nw) nw.style.removeProperty('display');
-      }
       setUploadLoading(true, 'Загрузка файла «' + file.name + '»...');
 
 
@@ -3034,18 +3043,22 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       const reader = new FileReader();
 
       reader.onload = function(e) {
+        if (selection !== reportSelection) return;
 
         setUploadLoading(true, 'Анализ вкладок Excel и расчёт показателей...');
 
         // Даём браузеру 50 мс отрисовать анимацию перед запуском парсинга XLSX
 
         setTimeout(() => {
+          if (selection !== reportSelection) return;
 
           try {
 
             const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
 
-            parseWorkbook(wb, file.name);
+            const report = parseWorkbook(wb, file.name);
+            applyReport(report);
+            saveLatestCloudReport(report);
 
           } catch (err) {
 
@@ -3066,6 +3079,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       };
 
       reader.onerror = function() {
+        if (selection !== reportSelection) return;
 
         setUploadLoading(false);
 
@@ -3078,6 +3092,130 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       reader.readAsArrayBuffer(file);
 
     }
+
+
+
+    const firebaseConfig = {
+      apiKey: 'AIzaSyA5C3zgPMnMFNEl3BNcqFUYR6MCj944KaQ',
+      authDomain: 'sokolmotors-analytics.firebaseapp.com',
+      projectId: 'sokolmotors-analytics',
+      storageBucket: 'sokolmotors-analytics.firebasestorage.app',
+      messagingSenderId: '861992429780',
+      appId: '1:861992429780:web:dce134cb16584514c77341'
+    };
+    const cloudReportButton = document.getElementById('applyCloudReportBtn');
+    const cloudReportStatus = document.getElementById('cloudReportStatus');
+    const cloudDateFormat = new Intl.DateTimeFormat('ru-RU', { dateStyle: 'short', timeStyle: 'short' });
+    const cloudTextEncoder = new TextEncoder();
+    const cloudLoadingText = 'Загружаю отчёт из облака...';
+    let reportSelection = 0;
+    let cloudStore;
+    let cloudWrite = Promise.resolve();
+
+    function getCloudStore() {
+      cloudStore ??= Promise.all([
+        import('https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js'),
+        import('https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore-lite.js')
+      ]).then(([{ initializeApp }, sdk]) => {
+        const db = sdk.getFirestore(initializeApp(firebaseConfig));
+        return { sdk, latest: sdk.doc(db, 'reports', 'latest') };
+      });
+      return cloudStore;
+    }
+
+    async function getReportCompression() {
+      const { default: lzString } = await import('https://cdn.jsdelivr.net/npm/lz-string@1.5.0/+esm');
+      return lzString;
+    }
+
+    function setCloudStatus(message, isError = false) {
+      cloudReportStatus.dataset.error = String(isError);
+      cloudReportStatus.textContent = message;
+    }
+
+    function showCloudError(error) {
+      console.error('Firestore reports/latest:', error);
+      const detail = error.code === 'permission-denied' ? 'Доступ к отчёту запрещён.' :
+        error.code === 'report-too-large' ? 'Отчёт превышает лимит Firestore даже после сжатия.' : '';
+      setCloudStatus(detail ? `Ошибка базы. ${detail}` : 'Ошибка базы', true);
+    }
+
+    function saveLatestCloudReport(report) {
+      setCloudStatus('Сохраняю в облако...');
+      const write = cloudWrite.catch(() => {}).then(async () => {
+        const { sdk, latest } = await getCloudStore();
+        const json = JSON.stringify(report);
+        const jsonSize = cloudTextEncoder.encode(json).byteLength;
+        const compressed = jsonSize > 900 * 1024;
+        const payload = compressed ? (await getReportCompression()).compressToUint8Array(json) : json;
+        const payloadSize = compressed ? payload.byteLength : jsonSize;
+        // Leave room for the document path, field names and metadata.
+        if (payloadSize + cloudTextEncoder.encode(report.fileName).byteLength + 1024 > 1024 * 1024) {
+          throw Object.assign(new Error('Cloud report exceeds the document size limit'), { code: 'report-too-large' });
+        }
+        await sdk.setDoc(latest, {
+          fileName: report.fileName,
+          savedAt: sdk.serverTimestamp(),
+          compressed,
+          payload: compressed ? sdk.Bytes.fromUint8Array(payload) : payload
+        });
+      });
+      cloudWrite = write;
+      write.then(() => {
+        if (cloudWrite === write) setCloudStatus('Сохранено!');
+      }, (error) => {
+        if (cloudWrite === write) showCloudError(error);
+      });
+    }
+
+    async function readLatestCloudReport() {
+      const { sdk, latest } = await getCloudStore();
+      const snapshot = await sdk.getDoc(latest);
+      const saved = snapshot.data();
+      if (!saved) {
+        cloudReportButton.classList.add('hidden');
+        return null;
+      }
+      if (typeof saved.fileName !== 'string' || typeof saved.savedAt?.toDate !== 'function' ||
+          typeof saved.compressed !== 'boolean' ||
+          (saved.compressed === true ? !saved.payload?.toUint8Array : typeof saved.payload !== 'string')) {
+        throw new Error('Invalid cloud report metadata');
+      }
+      const date = cloudDateFormat.format(saved.savedAt.toDate());
+      cloudReportButton.textContent = `Применить последний отчет из облака (${saved.fileName} · ${date})`;
+      cloudReportButton.classList.remove('hidden');
+      return saved;
+    }
+
+    cloudReportButton.addEventListener('click', async () => {
+      const selection = ++reportSelection;
+      cloudReportButton.disabled = true;
+      setUploadLoading(false);
+      setCloudStatus(cloudLoadingText);
+      try {
+        const saved = await readLatestCloudReport();
+        if (!saved) throw new Error('Cloud report no longer exists');
+        const json = saved.compressed ? (await getReportCompression()).decompressFromUint8Array(saved.payload.toUint8Array()) : saved.payload;
+        const report = JSON.parse(json);
+        if (!report?.ref?.vmtp || typeof report.activeYM !== 'string' ||
+            !['allDates', 'leads', 'calls', 'visits', 'consents', 'salonConsents', 'fixes'].every(key => Array.isArray(report[key]))) {
+          throw new Error('Invalid cloud report data');
+        }
+        if (selection === reportSelection) {
+          document.getElementById('uploadError').style.display = 'none';
+          applyReport({ ...report, fileName: saved.fileName });
+        }
+      } catch (error) {
+        if (selection === reportSelection) showCloudError(error);
+      } finally {
+        cloudReportButton.disabled = false;
+        if (cloudReportStatus.textContent === cloudLoadingText) setCloudStatus('');
+      }
+    });
+
+    readLatestCloudReport().catch(error => {
+      if (!cloudReportStatus.textContent) showCloudError(error);
+    });
 
 
 
