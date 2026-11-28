@@ -2773,6 +2773,11 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       };
     }
 
+    function getReportPeriodDates(report) {
+      const callDates = new Set(report.calls.filter(c => c.status !== 'Пропущенный звонок').map(c => c.date));
+      return report.allDates.filter(date => callDates.has(date));
+    }
+
     function showManagerReport(report) {
       STATE.data = report;
       const vmtpList = Object.keys(report.ref.vmtp);
@@ -2785,8 +2790,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       document.getElementById('welcomeFileInfo').textContent = report.fileName;
       const month = new Date(report.activeYM + '-01T00:00:00');
       const monthLabel = month.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
-      const callDates = new Set(report.calls.filter(c => c.status !== 'Пропущенный звонок').map(c => c.date));
-      const dates = report.allDates.filter(date => callDates.has(date));
+      const dates = getReportPeriodDates(report);
       const period = dates.length ? monthLabel + ' · ' + dates[0].slice(8) + '–' + dates.at(-1).slice(8) : monthLabel;
       document.getElementById('wStatPeriod').textContent = period;
       document.getElementById('wStatCalls').textContent = report.calls.length.toLocaleString('ru-RU');
@@ -3118,17 +3122,8 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     }
 
     function getReportDateRange(report) {
-      const reportDates = new Set(report.allDates);
-      let first = '';
-      let last = '';
-      for (const rows of [report.leads, report.calls, report.visits, report.consents, report.salonConsents]) {
-        for (const { date } of rows) {
-          if (!reportDates.has(date)) continue;
-          if (!first || date < first) first = date;
-          if (date > last) last = date;
-        }
-      }
-      return first ? `${fmtDate(first).slice(0, 5)}-${fmtDate(last).slice(0, 5)}` : '';
+      const dates = getReportPeriodDates(report);
+      return dates.length ? `${fmtDate(dates[0]).slice(0, 5)}-${fmtDate(dates.at(-1)).slice(0, 5)}` : '';
     }
 
     async function showLatestCloudReportDetails() {
@@ -3136,7 +3131,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
         const url = new URL(`https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/(default)/documents/reports/latest`);
         url.searchParams.set('key', firebaseConfig.apiKey);
         url.searchParams.append('mask.fieldPaths', 'savedAt');
-        url.searchParams.append('mask.fieldPaths', 'dateRange');
+        url.searchParams.append('mask.fieldPaths', 'callDateRange');
         const response = await fetch(url, { cache: 'no-store' });
         if (response.status === 404) {
           cloudReportDetails.textContent = 'В облаке пока нет сохранённого отчёта.';
@@ -3146,9 +3141,9 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
         const { fields } = await response.json();
         let savedAt = fields?.savedAt?.timestampValue;
-        let dateRange = fields?.dateRange?.stringValue;
+        let dateRange = fields?.callDateRange?.stringValue;
         if (dateRange === undefined) {
-          // Older reports store the dates only in the saved report data.
+          // Recalculate older reports, including those with a range from all tables.
           const report = await readLatestCloudReport();
           if (!report) {
             cloudReportDetails.textContent = 'В облаке пока нет сохранённого отчёта.';
@@ -3185,7 +3180,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
         await sdk.setDoc(latest, {
           fileName: report.fileName,
           savedAt: sdk.serverTimestamp(),
-          dateRange: getReportDateRange(report),
+          callDateRange: getReportDateRange(report),
           compressed,
           payload: compressed ? sdk.Bytes.fromUint8Array(payload) : payload
         });
