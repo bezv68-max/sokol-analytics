@@ -1689,8 +1689,8 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
 <script>
   try {
-    document.documentElement.classList.toggle('holiday-on', localStorage.getItem('sokolMotors.holidayEnabled') === 'true');
-  } catch { /* Without storage the report starts in its standard appearance. */ }
+    document.documentElement.classList.toggle('holiday-on', localStorage.getItem('sokolMotors.holidayEnabled') !== 'false');
+  } catch { document.documentElement.classList.add('holiday-on'); }
 </script>
 <style id="holiday-theme">
   .topbar { position: relative; padding-top: 32px; }
