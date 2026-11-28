@@ -1529,6 +1529,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   .file-types { font-size: 13px; color: var(--text-muted); }
   .upload-actions { display: flex; align-items: flex-start; flex-direction: column; gap: 10px; margin-top: 20px; }
   .upload-actions .btn { min-height: 46px; text-align: left; overflow-wrap: anywhere; }
+  .cloud-report-details { color: var(--text-muted); font-size: 13px; line-height: 1.5; }
   .upload-aside {
     display: flex;
     flex-direction: column;
@@ -1922,7 +1923,8 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
           </div>
           <div class="upload-actions">
             <button class="btn btn-primary" onclick="pickExcelFileWithMemory()">Выбрать файл</button>
-            <button type="button" id="applyCloudReportBtn" class="btn btn-outline">Войти с отчётом из облака</button>
+            <button type="button" id="applyCloudReportBtn" class="btn btn-outline" aria-describedby="cloudReportDetails">Войти с отчётом из облака</button>
+            <div id="cloudReportDetails" class="cloud-report-details" role="status" aria-atomic="true">Проверяю облачное сохранение…</div>
             <div id="quickLastFileWrap" class="hidden">
               <button id="quickLastFileBtn" class="btn btn-outline" onclick="loadLastRememberedFile()">Загрузить последний файл</button>
             </div>
@@ -2922,7 +2924,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     function showReportFile(report) {
       document.getElementById('uploadScreen').classList.add('hidden');
       document.getElementById('reportLogout').classList.remove('hidden');
-      document.getElementById('fileStatus').textContent = report.savedAt ? report.fileName + ' · ' + report.savedAt : report.fileName;
+      document.getElementById('fileStatus').textContent = report.savedAt ? report.fileName + ' · ' + cloudDateFormat.format(report.savedAt) : report.fileName;
     }
 
     let excelReading = false;
@@ -3078,7 +3080,11 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     };
     const cloudReportButton = document.getElementById('applyCloudReportBtn');
     const cloudReportStatus = document.getElementById('cloudReportStatus');
+    const cloudReportDetails = document.getElementById('cloudReportDetails');
     const cloudDateFormat = new Intl.DateTimeFormat('ru-RU', { dateStyle: 'short', timeStyle: 'short' });
+    const cloudSaveDateFormat = new Intl.DateTimeFormat('ru-RU', {
+      day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Europe/Moscow'
+    });
     const cloudTextEncoder = new TextEncoder();
     let cloudStore;
     let cloudWrite = Promise.resolve();
@@ -3111,6 +3117,58 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       setCloudStatus(detail ? `Ошибка базы. ${detail}` : 'Ошибка базы', true);
     }
 
+    function getReportDateRange(report) {
+      const reportDates = new Set(report.allDates);
+      let first = '';
+      let last = '';
+      for (const rows of [report.leads, report.calls, report.visits, report.consents, report.salonConsents]) {
+        for (const { date } of rows) {
+          if (!reportDates.has(date)) continue;
+          if (!first || date < first) first = date;
+          if (date > last) last = date;
+        }
+      }
+      return first ? `${fmtDate(first).slice(0, 5)}-${fmtDate(last).slice(0, 5)}` : '';
+    }
+
+    async function showLatestCloudReportDetails() {
+      try {
+        const url = new URL(`https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/(default)/documents/reports/latest`);
+        url.searchParams.set('key', firebaseConfig.apiKey);
+        url.searchParams.append('mask.fieldPaths', 'savedAt');
+        url.searchParams.append('mask.fieldPaths', 'dateRange');
+        const response = await fetch(url, { cache: 'no-store' });
+        if (response.status === 404) {
+          cloudReportDetails.textContent = 'В облаке пока нет сохранённого отчёта.';
+          return;
+        }
+        if (!response.ok) throw new Error(`Cloud report metadata request failed (${response.status})`);
+
+        const { fields } = await response.json();
+        let savedAt = fields?.savedAt?.timestampValue;
+        let dateRange = fields?.dateRange?.stringValue;
+        if (dateRange === undefined) {
+          // Older reports store the dates only in the saved report data.
+          const report = await readLatestCloudReport();
+          if (!report) {
+            cloudReportDetails.textContent = 'В облаке пока нет сохранённого отчёта.';
+            return;
+          }
+          savedAt = report.savedAt;
+          dateRange = getReportDateRange(report);
+        }
+
+        const savedLine = document.createElement('div');
+        savedLine.textContent = `Последнее сохранение в облаке: ${cloudSaveDateFormat.format(new Date(savedAt))}`;
+        const periodLine = document.createElement('div');
+        periodLine.textContent = dateRange ? `Период в файле: ${dateRange}` : 'В файле нет дат отчёта.';
+        cloudReportDetails.replaceChildren(savedLine, periodLine);
+      } catch (error) {
+        console.error('Cloud report details:', error);
+        cloudReportDetails.textContent = 'Не удалось проверить облачное сохранение.';
+      }
+    }
+
     function saveLatestCloudReport(report) {
       setCloudStatus('Сохраняю в облако...');
       const write = cloudWrite.catch(() => {}).then(async () => {
@@ -3127,6 +3185,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
         await sdk.setDoc(latest, {
           fileName: report.fileName,
           savedAt: sdk.serverTimestamp(),
+          dateRange: getReportDateRange(report),
           compressed,
           payload: compressed ? sdk.Bytes.fromUint8Array(payload) : payload
         });
@@ -3158,10 +3217,11 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
           !['allDates', 'leads', 'calls', 'visits', 'consents', 'salonConsents', 'fixes'].every(key => Array.isArray(report[key]))) {
         throw new Error('Invalid cloud report data');
       }
-      return { ...report, fileName: saved.fileName, savedAt: cloudDateFormat.format(saved.savedAt.toDate()) };
+      return { ...report, fileName: saved.fileName, savedAt: saved.savedAt.toDate() };
     }
 
     cloudReportButton.addEventListener('click', () => showReportLogin());
+    showLatestCloudReportDetails();
 
     // Хранилище ссылки на последний открытый Excel-файл (IndexedDB)
 
